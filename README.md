@@ -1,13 +1,17 @@
 
 # Build Bare Metal Kubernetes Dualstack Calico Metallb RaspberryPI 4 Rasbian Server 64bit. 31.01.2020
 
+You can Donate if you Enjoy.
+
+[![Paypal Donate Button](https://raw.githubusercontent.com/Trackhe/Rasbian64bitKubernetesServerDualstack/master/paypal-donate-button-.png)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=QY8TN4B4L87F4&source=url)
+
 **Required:**
 Running RaspberryPI 4 with the Rasbian Buster 64bit from here.
 *(im working on an automated build server.)*
 
 Download or Create a Raspian-Image for your MicroSDcard.
 
-Download: [Here](dasda)
+Download: [Here](http://cdn.trackhe.info/raspbian/debian-rpi4.img)
 
 or:
 <details>
@@ -20,7 +24,7 @@ My version is only for Server. and useable for Kubernetes.
 #(but the basic system runns with kernel 5.5 i have try that)
 #build the Kernel faster with "make -j4 ARCH... -j(prozessor thread count).
 
-Required: Debian Buster.
+Required: Debian Buster. Runn as root `sudo -i` or `su`
 
 ```
 apt install -y debootstrap dosfstools qemu qemu-user-static binfmt-support build-essential git bison flex libssl-dev cmake libncurses-dev parted bc binutils-aarch64-linux-gnu gcc-aarch64-linux-gnu g++-8-aarch64-linux-gnu && \
@@ -75,6 +79,9 @@ adduser pi --gecos "" --disabled-password
 echo pi:raspberry | chpasswd
 
 usermod -aG video,audio,redner,sudo pi
+
+echo 'pi      ALL=(ALL:ALL) ALL' >> /etc/sudoers
+
 echo 'SUBSYSTEM=="vchiq",GROUP="video",MODE="0660"' > /etc/udev/rules.d/10-vchiq-permissions.rules
 
 service dbus restart
@@ -167,12 +174,14 @@ echo "root=/dev/mmcblk0p2 rootfstype=ext4 elevator=deadline fsck.repair=yes root
  snd_bcm2835.enable_headphones=1 snd_bcm2835.enable_hdmi=1 snd_bcm2835.enable_compat_alsa=1" > /mnt/boot/cmdline.txt && \
 
 cd $BaseWorkDir && \
-apt-install pkg-config && \
+apt install pkg-config && \
 git clone https://github.com/raspberrypi/userland && \
 cd userland && \
 sed s/sudo// -i buildme && \
 ./buildme --aarch64 /mnt && \
+mkdir -p /mnt/etc/ld.so.conf.d && \
 echo "/opt/vc/lib" > /mnt/etc/ld.so.conf.d/userland.conf && \
+mkdir -p /mnt/usr/local/bin && \
 cp -va build/bin/* /mnt/usr/local/bin && \
 
 umount -l /mnt/boot || /bin/true  && \
@@ -188,6 +197,7 @@ EOF
 Tool: [balena.io/etcher](https://www.balena.io/etcher/)
 
 First of all be sure that you run it on the raspberry:
+```sudo -i```
 ```
 apt install parted
 parted /dev/mmcblk0 "resizepart 2 -1"
