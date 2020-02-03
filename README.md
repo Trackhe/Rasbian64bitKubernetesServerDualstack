@@ -7,7 +7,8 @@ Running RaspberryPI 4 with the Rasbian Buster 64bit from here.
 
 Download or Create a Raspian-Image for your MicroSDcard.
 
-Download: [Here](http://cdn.trackhe.info/raspbian/debian-rpi4.img)
+Download: [Here.img](http://cdn.trackhe.info/raspbian/debian-rpi4.img) ca[3.77GB]
+Download: [Here.img.zip](http://cdn.trackhe.info/raspbian/debian-rpi4.img.zip) ca[504,2mb]
 
 or:
 <details>
@@ -62,7 +63,7 @@ deb http://deb.debian.org/debian/ buster-updates main contrib non-free
 deb-src http://deb.debian.org/debian/ buster-updates main contrib non-free" > /etc/apt/sources.list
 
 apt-get update
-apt install -y console-setup debconf locales wget sudo ca-certificates dbus dhcpcd5 net-tools ssh openssh-server nano ntp screen htop multitail bc most dnsutils mc autofs wpasupplicant wireless-tools git lua5.1 alsa-utils psmisc initramfs-tools curl binutils parted
+apt install -y console-setup debconf locales wget sudo ca-certificates dbus dhcpcd5 net-tools ssh openssh-server nano ntp screen htop multitail bc most dnsutils mc autofs wpasupplicant wireless-tools git lua5.1 alsa-utils psmisc initramfs-tools curl binutils parted dphys-swapfile
 apt --fix-broken install
 
 dpkg-reconfigure locales          
@@ -226,6 +227,7 @@ sudo dphys-swapfile swapoff && \
 sudo dphys-swapfile uninstall && \
 sudo systemctl disable dphys-swapfile
 ```
+When you gett dphys-swapfile not found `sudo apt-get install dphys-swapfile`
 
 First Step Install packages.cloud.google kubernetes.list:
 ```
