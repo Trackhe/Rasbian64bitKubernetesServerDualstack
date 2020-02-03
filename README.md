@@ -11,8 +11,9 @@ Running RaspberryPI 4 with the Rasbian Buster 64bit from here.
 
 Download or Create a Raspian-Image for your MicroSDcard.
 
-Download: [Here.img](http://cdn.trackhe.info/raspbian/debian-rpi4.img) ca[3.77GB]
-Download: [Here.img.zip](http://cdn.trackhe.info/raspbian/debian-rpi4.img.zip) ca[504,2mb]
+[Releases.](https://github.com/Trackhe/Rasbian64bitKubernetesServerDualstack/releases)
+
+[Direkt.](https://github.com/Trackhe/Rasbian64bitKubernetesServerDualstack/releases/download/0.8/debian-rpi4.img.zip)
 
 or:
 <details>
