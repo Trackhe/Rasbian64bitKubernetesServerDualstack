@@ -1,5 +1,9 @@
+# Build Bare Metal Kubernetes Dualstack Calico Metallb RaspberryPI 4 Rasbian Server 64bit.
 
-# Build Bare Metal Kubernetes Dualstack Calico Metallb RaspberryPI 4 Rasbian Server 64bit. 31.01.2020
+[![GitHub issues](https://img.shields.io/github/issues/trackhe/Rasbian64bitKubernetesServerDualstack.svg)](https://GitHub.com/trackhe/Rasbian64bitKubernetesServerDualstack/issues/)
+[![GitHub pull-requests](https://img.shields.io/github/issues-pr/trackhe/Rasbian64bitKubernetesServerDualstack)](https://GitHub.com/trackhe/Rasbian64bitKubernetesServerDualstack/pull/)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
+[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/trackhe/Rasbian64bitKubernetesServerDualstack/graphs/commit-activity)
 
 **Required:**
 Running RaspberryPI 4 with the Rasbian Buster 64bit from here.
@@ -250,9 +254,11 @@ Recommended but optional: ```apt-mark hold kubelet kubeadm kubectl```
 
 Soo you can use:
 ```
-kubeadm init --pod-network-cidr=192.168.0.0/16
+sudo kubeadm init --pod-network-cidr=192.168.0.0/16
 ```
-or  ```kubeadm join``` with the required extra arguments. You get it after "kubeadm init" on Master.
+or  ```sudo kubeadm join``` with the required extra arguments. You get it after "kubeadm init" on Master.
+
+##Idont know why but you need `sudo` if you get command not found.
 
 Configure Kubectl:
 ```
@@ -265,10 +271,90 @@ So you need to deploy a Network Pod.
 ```
 kubectl apply -f https://docs.projectcalico.org/v3.11/manifests/calico.yaml
 ```
-... Coming soon..
 
-You can Donate if you Enjoy.
+Be sure `kubectl get pods --all-namespaces` result:
+
+```
+NAMESPACE     NAME                                       READY   STATUS    RESTARTS   AGE
+kube-system   calico-kube-controllers-number             1/1     Running   0          100s
+kube-system   calico-node-number                         1/1     Running   0          95s
+kube-system   coredns-number                             1/1     Running   0          100s
+kube-system   coredns-number                             1/1     Running   0          100s
+kube-system   etcd-hostname                              1/1     Running   0          120s
+kube-system   kube-apiserver-hostname                    1/1     Running   0          120s
+kube-system   kube-controller-manager-hostname           1/1     Running   1          120s
+kube-system   kube-proxy-number                          1/1     Running   0          100s
+kube-system   kube-scheduler-hostname                    1/1     Running   1          120s
+```
+Install Dashboard:
+
+```
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-rc3/aio/deploy/recommended.yaml
+```
+
+To run Metrics Pod you need to untain your node:
+```
+kubectl taint nodes --all node-role.kubernetes.io/master-
+```
+
+Clone Metrics Server:
+```
+apt-get install git && \
+git clone https://github.com/kubernetes-sigs/metrics-server.git && \
+cd metrics-server && \
+sed -i s/amd64/arm64/g deploy/1.8+/metrics-server-deployment.yaml && \
+nano deploy/1.8+/metrics-server-deployment.yaml
+```
+
+Edit from:
+```
+containers:
+- name: metrics-server
+  image: k8s.gcr.io/metrics-server-arm64:v0.3.6
+  args:
+    - --cert-dir=/tmp
+    - --secure-port=4443
+```
+to:
+```
+containers:
+  - name: metrics-server
+    image: k8s.gcr.io/metrics-server-arm64:v0.3.6
+    args:
+      - --cert-dir=/tmp
+      - --secure-port=4443
+      - --kubelet-insecure-tls
+      - --kubelet-preferred-address-types=InternalIP
+```
+and deploy:
+```
+kubectl create -f deploy/1.8+/
+```
+
+Go back `cd ..` and download dashboard user, ClusterRoleBinding, deploy and get the login token.
+
+```
+wget https://raw.githubusercontent.com/Trackhe/Rasbian64bitKubernetesServerDualstack/master/deployment/admin-user.yaml && \
+kubectl apply -f admin-user.yaml && \
+wget https://raw.githubusercontent.com/Trackhe/Rasbian64bitKubernetesServerDualstack/master/deployment/admin-cluster-role-binding.yaml && \
+kubectl apply -f admin-cluster-role-binding.yaml && \
+kubectl -n kubernetes-dashboard describe secret $(kubectl -n kubernetes-dashboard get secret | grep admin-user | awk '{print $1}')
+```
+
+
+Now you can connect to the server with a terminal via `ssh -L 8001:localhost:8001 pi@piipaddresse` -> `su` -> `raspberry` or the password -> run `kubectl proxy --address='0.0.0.0' --accept-hosts='^*$'`
+and reach the Dashboard via `http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/#/overview?namespace=_all`
+
+For Mac terminal: `ssh -L 8001:localhost:8001 pi@piipaddresse`
+Linux Like Ubuntu : Unknown pls google
+Windows PShell : Unknown pls google
+
+A Part to make the Dashboard on the LAN Reachable follows soon.
+
+... Coming soon...
+
+I hope you enjoy. Best Regards.
 
 [![Paypal Donate Button](https://raw.githubusercontent.com/Trackhe/Rasbian64bitKubernetesServerDualstack/master/paypal-donate-button-.png)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=QY8TN4B4L87F4&source=url)
 
-
+Feel free to make improvements. and share it with us.
