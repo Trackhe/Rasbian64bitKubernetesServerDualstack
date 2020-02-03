@@ -1,10 +1,6 @@
 
 # Build Bare Metal Kubernetes Dualstack Calico Metallb RaspberryPI 4 Rasbian Server 64bit. 31.01.2020
 
-You can Donate if you Enjoy.
-
-[![Paypal Donate Button](https://raw.githubusercontent.com/Trackhe/Rasbian64bitKubernetesServerDualstack/master/paypal-donate-button-.png)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=QY8TN4B4L87F4&source=url)
-
 **Required:**
 Running RaspberryPI 4 with the Rasbian Buster 64bit from here.
 *(im working on an automated build server.)*
@@ -267,3 +263,10 @@ So you need to deploy a Network Pod.
 ```
 kubectl apply -f https://docs.projectcalico.org/v3.11/manifests/calico.yaml
 ```
+... Coming soon..
+
+You can Donate if you Enjoy.
+
+[![Paypal Donate Button](https://raw.githubusercontent.com/Trackhe/Rasbian64bitKubernetesServerDualstack/master/paypal-donate-button-.png)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=QY8TN4B4L87F4&source=url)
+
+
