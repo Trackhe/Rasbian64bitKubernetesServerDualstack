@@ -242,12 +242,6 @@ You will install these packages on all of your machines:
 apt-get update && apt-get install -y kubelet kubeadm kubectl
 ```
 
-... Coming soon..
-
-You can Donate if you Enjoy.
-
-[![Paypal Donate Button](https://raw.githubusercontent.com/Trackhe/Rasbian64bitKubernetesServerDualstack/master/paypal-donate-button-.png)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=QY8TN4B4L87F4&source=url)
-
 Recommended but optional: ```apt-mark hold kubelet kubeadm kubectl```
 
 [WARNING IsDockerSystemdCheck]: detected "cgroupfs" as the Docker cgroup driver. The recommended driver is "systemd". Please follow the guide at https://kubernetes.io/docs/setup/cri/
@@ -269,3 +263,10 @@ So you need to deploy a Network Pod.
 ```
 kubectl apply -f https://docs.projectcalico.org/v3.11/manifests/calico.yaml
 ```
+... Coming soon..
+
+You can Donate if you Enjoy.
+
+[![Paypal Donate Button](https://raw.githubusercontent.com/Trackhe/Rasbian64bitKubernetesServerDualstack/master/paypal-donate-button-.png)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=QY8TN4B4L87F4&source=url)
+
+
