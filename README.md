@@ -370,7 +370,9 @@ spec:
 EOF
 ```
 
+```
 calicoctl create -f - < calicoip6.yaml
+```
 
 Install Dashboard:
 
@@ -379,39 +381,10 @@ kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.2/a
 ```
 
 
-Clone Metrics Server:
-```
-apt-get install git && \
-git clone https://github.com/kubernetes-sigs/metrics-server.git && \
-cd metrics-server && \
-sed -i s/amd64/arm64/g deploy/1.8+/metrics-server-deployment.yaml && \
-nano deploy/1.8+/metrics-server-deployment.yaml
-```
+Metrics Server:
 
-Edit from:
-```
-containers:
-- name: metrics-server
-  image: k8s.gcr.io/metrics-server-arm64:v0.3.6
-  args:
-    - --cert-dir=/tmp
-    - --secure-port=4443
-```
-to:
-```
-containers:
-  - name: metrics-server
-    image: k8s.gcr.io/metrics-server-arm64:v0.3.6
-    args:
-      - --cert-dir=/tmp
-      - --secure-port=4443
-      - --kubelet-insecure-tls
-      - --kubelet-preferred-address-types=InternalIP
-```
-and deploy:
-```
-kubectl create -f deploy/1.8+/
-```
+Cooming on next update back!..
+
 
 Go back `cd ..` and download dashboard user, ClusterRoleBinding, deploy and get the login token.
 
