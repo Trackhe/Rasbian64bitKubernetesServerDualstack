@@ -26,8 +26,19 @@ My version is only for Server. and useable for Kubernetes.
 #(but the basic system runns with kernel 5.5 i have try that)
 #build the Kernel faster with "make -j4 ARCH... -j(prozessor thread count).
 
-Required: Debian Buster. Runn as root `sudo -i` or `su`
+Soon official 64bit ...
 
+Required: Debian Buster (10.14). Runn as root:
+
+login as root
+`su`
+
+change {username} to your username and restart after this your ssh session. login as normal user and make `sudo -i`
+```
+apt-get install sudo \
+usermod -aG sudo {username}
+```
+---------
 ```
 apt install -y debootstrap dosfstools qemu qemu-user-static binfmt-support build-essential git bison flex libssl-dev cmake libncurses-dev parted bc binutils-aarch64-linux-gnu gcc-aarch64-linux-gnu g++-8-aarch64-linux-gnu && \
 ln -sf /usr/bin/aarch64-linux-gnu-g++-8 /usr/bin/aarch64-linux-gnu-g++ && \
@@ -201,15 +212,16 @@ Tool: [balena.io/etcher](https://www.balena.io/etcher/)
 First of all be sure that you run it on the raspberry:
 ```sudo -i```
 ```
-apt install parted
 parted /dev/mmcblk0 "resizepart 2 -1"
 resize2fs /dev/mmcblk0p2
 ```
 
 Configure it before you start with this Manuell:
 ```
-sudo raspi-config
+raspi-config
 ```
+
+--- Install Kubernetes Dualstack ---
 
 Run all at Root:
 ```
@@ -223,14 +235,14 @@ curl -fSLs https://get.docker.com | sudo sh
 
 Give Docker User root:
 ```
-sudo usermod -aG docker pi
+usermod -aG docker pi
 ```
 
 Disable SWAP:
 ```
-sudo dphys-swapfile swapoff && \
-sudo dphys-swapfile uninstall && \
-sudo systemctl disable dphys-swapfile
+dphys-swapfile swapoff && \
+dphys-swapfile uninstall && \
+systemctl disable dphys-swapfile
 ```
 When you gett dphys-swapfile not found `sudo apt-get install dphys-swapfile`
 
@@ -255,7 +267,18 @@ Recommended but optional: ```apt-mark hold kubelet kubeadm kubectl```
 
 Soo you can use:
 ```
-sudo kubeadm init --pod-network-cidr=192.168.0.0/16
+cat >> kubeadm.yaml << EOF
+apiVersion: kubeadm.k8s.io/v1beta2
+featureGates:
+  IPv6DualStack: true
+kind: ClusterConfiguration
+networking:
+  podSubnet: 192.168.178.0/16
+EOF
+```
+
+```
+kubeadm init --config kubeadm.yaml
 ```
 or  ```sudo kubeadm join``` with the required extra arguments. You get it after "kubeadm init" on Master.
 
@@ -270,7 +293,8 @@ chown $(id -u):$(id -g) $HOME/.kube/config
 
 So you need to deploy a Network Pod.
 ```
-kubectl apply -f https://docs.projectcalico.org/v3.11/manifests/calico.yaml
+wget https://docs.projectcalico.org/v3.14/manifests/calico.yaml && \
+kubectl apply -f calico.yaml
 ```
 
 Be sure `kubectl get pods --all-namespaces` result:
@@ -287,16 +311,73 @@ kube-system   kube-controller-manager-hostname           1/1     Running   1    
 kube-system   kube-proxy-number                          1/1     Running   0          100s
 kube-system   kube-scheduler-hostname                    1/1     Running   1          120s
 ```
-Install Dashboard:
+
+Modifying Calico to support IPv6
+We need to make the following changes to the calico.yaml file:
+
+The ipam part (the ConfigMap) should look as follows:
+```
+"ipam": {
+        "type": "calico-ipam",
+        "assign_ipv4": "true",
+        "assign_ipv6": "true"
+},
+```
+Pay very close attention to the indentation here (even in the JSON part)
+
+Add the following environment variables to the calico-node container (environment variables start at about line 633):
+```
+env:
+ - name: IP6
+    value: "autodetect"
+ - name: FELIX_IPV6SUPPORT
+    value: "true"
+```
+Apply the file now to patch the existing deployment:
 
 ```
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-rc3/aio/deploy/recommended.yaml
+kubectl apply -f calico.yaml
 ```
+Again, wait until all the Calico pods are running and have passed the readiness probes.
 
-To run Metrics Pod you need to untain your node:
+You need to untain your node to run pods on master Node:
 ```
 kubectl taint nodes --all node-role.kubernetes.io/master-
 ```
+
+Install Calicoctl:
+
+```
+kubectl apply -f https://docs.projectcalico.org/manifests/calicoctl.yaml
+```
+
+wait a second to create the container and do
+
+```
+alias calicoctl="kubectl exec -i -n kube-system calicoctl -- /calicoctl"
+```
+now you can use Calicoctl.
+
+```
+cat >> calicoip6.yaml << EOF
+apiVersion: projectcalico.org/v3
+kind: IPPool
+metadata:
+  name: default-ipv6-ippool
+spec:
+  cidr: fd7a:c43d:7851::/48
+  natOutgoing: true
+EOF
+```
+
+calicoctl create -f - < calicoip6.yaml
+
+Install Dashboard:
+
+```
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.2/aio/deploy/recommended.yaml
+```
+
 
 Clone Metrics Server:
 ```
