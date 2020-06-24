@@ -26,7 +26,7 @@ My version is only for Server. and useable for Kubernetes.
 #(but the basic system runns with kernel 5.5 i have try that)
 #build the Kernel faster with "make -j4 ARCH... -j(prozessor thread count).
 
-Soon official 64bit ...
+Soon official 64bit ...:
 
 Required: Debian Buster (10.14). Runn as root:
 
@@ -228,6 +228,20 @@ Run all at Root:
 sudo -i
 ```
 
+Prepare the OS:
+
+```
+cat <<EOF | sudo tee /etc/sysctl.d/k8s.conf
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+net.ipv4.ip_forward=1
+net.ipv6.conf.all.forwarding=1
+EOF
+```
+```
+sysctl --system
+```
+
 Install Docker:
 ```
 curl -fSLs https://get.docker.com | sudo sh
@@ -236,6 +250,32 @@ curl -fSLs https://get.docker.com | sudo sh
 Give Docker User root:
 ```
 usermod -aG docker pi
+```
+
+Add the Docker apt repository:
+```
+add-apt-repository \
+  "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) \
+  stable"
+```
+
+Set up the Docker daemon for autostart:
+```
+cat > /etc/docker/daemon.json <<EOF
+{
+  "exec-opts": ["native.cgroupdriver=systemd"],
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "100m"
+  },
+  "storage-driver": "overlay2"
+}
+EOF
+```
+```
+mkdir -p /etc/systemd/system/docker.service.d && \
+systemctl enable docker
 ```
 
 Disable SWAP:
@@ -261,10 +301,6 @@ You will install these packages on all of your machines:
 apt-get update && apt-get install -y kubelet kubeadm kubectl
 ```
 
-Recommended but optional: ```apt-mark hold kubelet kubeadm kubectl```
-
-[WARNING IsDockerSystemdCheck]: detected "cgroupfs" as the Docker cgroup driver. The recommended driver is "systemd". Please follow the guide at https://kubernetes.io/docs/setup/cri/
-
 Soo you can use:
 ```
 cat >> kubeadm.yaml << EOF
@@ -273,7 +309,7 @@ featureGates:
   IPv6DualStack: true
 kind: ClusterConfiguration
 networking:
-  podSubnet: 192.168.178.0/16
+  podSubnet: 192.168.0.0/16
 EOF
 ```
 
@@ -365,14 +401,18 @@ kind: IPPool
 metadata:
   name: default-ipv6-ippool
 spec:
-  cidr: fd7a:c43d:7851::/48
+  cidr: fd7a:cccc:dddd::/48
   natOutgoing: true
 EOF
 ```
 
+<<<<<<< Updated upstream
 ```
 calicoctl create -f - < calicoip6.yaml
 ```
+=======
+```calicoctl create -f - < calicoip6.yaml```
+>>>>>>> Stashed changes
 
 Install Dashboard:
 
@@ -381,10 +421,16 @@ kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.2/a
 ```
 
 
+<<<<<<< Updated upstream
 Metrics Server:
 
 Cooming on next update back!..
 
+=======
+Clone Metrics Server:
+
+coming on next update back!
+>>>>>>> Stashed changes
 
 Go back `cd ..` and download dashboard user, ClusterRoleBinding, deploy and get the login token.
 
