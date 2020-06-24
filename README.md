@@ -11,6 +11,8 @@ Running RaspberryPI 4 with the Rasbian Buster 64bit from here.
 
 Download or Create a Raspian-Image for your MicroSDcard.
 
+In the near future there will be a 64 bit image from the official website itself. i will give a link after release and after testing. !!!!!!
+
 [Releases.](https://github.com/Trackhe/Rasbian64bitKubernetesServerDualstack/releases)
 
 [Direkt.](https://github.com/Trackhe/Rasbian64bitKubernetesServerDualstack/releases/download/0.8/debian-rpi4.img.zip)
@@ -406,13 +408,9 @@ spec:
 EOF
 ```
 
-<<<<<<< Updated upstream
 ```
 calicoctl create -f - < calicoip6.yaml
 ```
-=======
-```calicoctl create -f - < calicoip6.yaml```
->>>>>>> Stashed changes
 
 Install Dashboard:
 
@@ -421,16 +419,9 @@ kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.2/a
 ```
 
 
-<<<<<<< Updated upstream
-Metrics Server:
-
-Cooming on next update back!..
-
-=======
 Clone Metrics Server:
 
 coming on next update back!
->>>>>>> Stashed changes
 
 Go back `cd ..` and download dashboard user, ClusterRoleBinding, deploy and get the login token.
 
