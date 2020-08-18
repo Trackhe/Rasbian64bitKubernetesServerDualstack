@@ -1,237 +1,61 @@
-# Build Bare Metal Kubernetes Dualstack Calico Metallb RaspberryPI 4 Rasbian Server 64bit.
+# Build Bare Metal Kubernetes Dualstack Calico Metallb RaspberryPI 4 Ubuntu Server 64bit. (64bit required!!!)
 
-[![GitHub issues](https://img.shields.io/github/issues/trackhe/Rasbian64bitKubernetesServerDualstack.svg)](https://GitHub.com/trackhe/Rasbian64bitKubernetesServerDualstack/issues/)
-[![GitHub pull-requests](https://img.shields.io/github/issues-pr/trackhe/Rasbian64bitKubernetesServerDualstack)](https://GitHub.com/trackhe/Rasbian64bitKubernetesServerDualstack/pull/)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
-[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/trackhe/Rasbian64bitKubernetesServerDualstack/graphs/commit-activity)
+[![GitHub issues](https://img.shields.io/github/issues/trackhe/Raspberry64bitKubernetesServerDualstack.svg?style=flat-square)](https://GitHub.com/trackhe/Raspberry64bitKubernetesServerDualstack/issues/)
+[![GitHub pull-requests](https://img.shields.io/github/issues-pr/trackhe/Raspberry64bitKubernetesServerDualstack?style=flat-square)](https://GitHub.com/trackhe/Raspberry64bitKubernetesServerDualstack/pull/)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](https://github.com/Trackhe/Raspberry64bitKubernetesServerDualstack/pulls)
+[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-brightgreen.svg?style=flat-square)](https://GitHub.com/trackhe/Raspberry64bitKubernetesServerDualstack/graphs/commit-activity)
 
 **Required:**
-Running RaspberryPI 4 with the Rasbian Buster 64bit from here.
-*(im working on an automated build server.)*
+Running RaspberryPI 4 with the Ubuntu Server 64bit from here.
 
-Download or Create a Raspian-Image for your MicroSDcard.
-
-In the near future there will be a 64 bit image from the official website itself. i will give a link after release and after testing. !!!!!!
-
-[Releases.](https://github.com/Trackhe/Rasbian64bitKubernetesServerDualstack/releases)
-
-[Direkt.](https://github.com/Trackhe/Rasbian64bitKubernetesServerDualstack/releases/download/0.8/debian-rpi4.img.zip)
-
-or:
-<details>
-  <summary>Create:</summary>
-
-#Orginal Instrucktions Page: [create tilmun/rasberry-pi-4-debian-buster-64bit](https://www.tilmun.de/1-raspberry-pi-4-debian-buster-64-bit-system-und-kernel-selbst-erstellen.html).
-My version is only for Server. and useable for Kubernetes.
-
-#I use the stable Kernel Version 4.19 because on v5.5 some like (cggroup memmory amd reboot/shutdown) are replaced.
-#(but the basic system runns with kernel 5.5 i have try that)
-#build the Kernel faster with "make -j4 ARCH... -j(prozessor thread count).
-
-Soon official 64bit ...:
-
-Required: Debian Buster (10.14). Runn as root:
-
-login as root
-`su`
-
-change {username} to your username and restart after this your ssh session. login as normal user and make `sudo -i`
-```
-apt-get install sudo \
-usermod -aG sudo {username}
-```
----------
-```
-apt install -y debootstrap dosfstools qemu qemu-user-static binfmt-support build-essential git bison flex libssl-dev cmake libncurses-dev parted bc binutils-aarch64-linux-gnu gcc-aarch64-linux-gnu g++-8-aarch64-linux-gnu && \
-ln -sf /usr/bin/aarch64-linux-gnu-g++-8 /usr/bin/aarch64-linux-gnu-g++ && \
-
-BaseWorkDir=$(pwd)/rpi4 && \
-mkdir -p $BaseWorkDir && \
-cd $BaseWorkDir && \
-dd if=/dev/zero of=debian-rpi4.img iflag=fullblock bs=1M count=3600 && \
-
-Loop_Dev=$(losetup -f -P --show debian-rpi4.img) && \
-parted $Loop_Dev "mklabel msdos" && \
-parted $Loop_Dev "mkpart p fat32 1 255" && \
-parted $Loop_Dev "mkpart p ext4 255 -1" && \
-
-mkfs.vfat $(echo $Loop_Dev)p1 && \
-mkfs.ext4 $(echo $Loop_Dev)p2 && \
-
-mount $(echo $Loop_Dev)p2 /mnt && \
-mkdir /mnt/boot && \
-mount $(echo $Loop_Dev)p1 /mnt/boot && \
-mount -i -o remount,exec,dev /mnt && \
-
-qemu-debootstrap --arch=arm64 buster /mnt && \
-
-mount -o bind /sys /mnt/sys && \
-mount -o bind /proc /mnt/proc && \
-mount -o bind /dev /mnt/dev && \
-mount -o bind /dev/pts /mnt/dev/pts && \
-
-cp /etc/resolv.conf /mnt/etc/resolv.conf && \
-
-chroot /mnt /bin/bash -x <<'EOF'
-echo "deb http://deb.debian.org/debian/ buster main non-free contrib
-deb-src http://deb.debian.org/debian/ buster main non-free contrib
-deb http://security.debian.org/debian-security buster/updates main contrib non-free
-deb-src http://security.debian.org/debian-security buster/updates main contrib non-free
-deb http://deb.debian.org/debian/ buster-updates main contrib non-free
-deb-src http://deb.debian.org/debian/ buster-updates main contrib non-free" > /etc/apt/sources.list
-
-apt-get update
-apt install -y console-setup debconf locales wget sudo ca-certificates dbus dhcpcd5 net-tools ssh openssh-server nano ntp screen htop multitail bc most dnsutils mc autofs wpasupplicant wireless-tools git lua5.1 alsa-utils psmisc initramfs-tools curl binutils parted dphys-swapfile
-apt --fix-broken install
-
-dpkg-reconfigure locales          
-dpkg-reconfigure keyboard-configuration
-dpkg-reconfigure tzdata
-
-echo root:raspberry | chpasswd
-
-adduser pi --gecos "" --disabled-password
-echo pi:raspberry | chpasswd
-
-usermod -aG video,audio,redner,sudo pi
-
-echo 'pi      ALL=(ALL:ALL) ALL' >> /etc/sudoers
-
-echo 'SUBSYSTEM=="vchiq",GROUP="video",MODE="0660"' > /etc/udev/rules.d/10-vchiq-permissions.rules
-
-service dbus restart
-echo "raspberrypinew" > /etc/hostname
-
-echo "
-/dev/mmcblk0p1 /boot   vfat    noatime,nodiratime                   0  2
-/dev/mmcblk0p2 /       ext4    noatime,nodiratime,errors=remount-ro 0  1
-tmpfs          /tmp    tmpfs   nosuid                               0  0
-" > /etc/fstab
-
-systemctl enable systemd-networkd.service
-systemctl enable systemd-resolved.service
-systenctl enable ssh
-
-echo "ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
-update_config=1
-country=DE"  > /etc/wpa_supplicant/wpa_supplicant.conf
-
-cd /tmp && \
-git clone https://git.kernel.org/pub/scm/linux/kernel/git/sforshee/wireless-regdb.git
-cd wireless-regdb
-mkdir -p /lib/firmware/brcm
-cp regulatory.db.p7s regulatory.db /lib/firmware
-cd /lib/firmware/brcm
-ln -s brcmfmac43455-sdio.bin brcmfmac43455-sdio.raspberrypi,4-model-b.bin
-ln -s brcmfmac43455-sdio.clm_blob brcmfmac43455-sdio.raspberrypi,4-model-b.clm_blob
-ln -s brcmfmac43455-sdio.txt brcmfmac43455-sdio.raspberrypi,4-model-b.txt
-
-cd /tmp
-mkdir toolsrcu && cd toolsrcu
-wget https://archive.raspberrypi.org/debian/pool/main/r/raspi-config/raspi-config_20200120_all.deb
-wget https://archive.raspberrypi.org/debian/pool/main/r/rpi-update/rpi-update_20140705_all.deb
-
-dpkg -i raspi-config_20200120_all.deb
-dpkg -i rpi-update_20140705_all.deb
-EOF && \
-
-cd / && \
-umount -l /mnt/dev/pts || /bin/true && \
-mount -o remount,ro /mnt/dev || /bin/true && \
-umount -l /mnt/dev || /bin/true  && \
-umount -l /mnt/proc || /bin/true  && \
-umount -l  /mnt/sys || /bin/true  && \
-
-cd /mnt/boot && \
-URL="https://github.com/raspberrypi/firmware/raw/master/boot/" && \
-for FILE in fixup4cd.dat fixup4.dat fixup4db.dat fixup4x.dat start4cd.elf start4db.elf start4.elf start4x.elf;\
-do wget $URL/$FILE;\
-done && \
-
-mkdir /tmp/firmware && \
-git clone https://github.com/RPi-Distro/firmware-nonfree /tmp/firmware && \
-cp -va /tmp/firmware/* /mnt/lib/firmware && \
-
-cd $BaseWorkDir && \
-
-git clone --depth=1 --branch rpi-4.19.y https://github.com/raspberrypi/linux && \
-
-cd linux && \
-make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- bcm2711_defconfig && \
-
-make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- && \
-cp arch/arm64/boot/Image /mnt/boot/kernel8.img && \
-
-make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- INSTALL_MOD_PATH=/mnt modules_install && \
-
-make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- INSTALL_DTBS_PATH=/mnt/boot dtbs_install && \
-cp /mnt/boot/broadcom/bcm2711-rpi-4-b.dtb /mnt/boot && \
-
-cd $BaseWorkDir && \
-git clone https://github.com/raspberrypi/tools.git tools && \
-cd tools/armstubs && \
-make -j4 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- armstub8-gic.bin && \
-cp armstub8-gic.bin /mnt/boot && \
-
-echo "[HDMI:0]
-hdmi_force_hotplug=1
-gpu_mem=16
-dtoverlay=vc4-fkms-v3d
-max_framebuffers=2
-armstub=armstub8-gic.bin
-enable_gic=1
-arm_64bit=1
-# Auskommentieren um wifi deaktivieren
-#dtoverlay=disable-wifi
-" > /mnt/boot/config.txt && \
-
-echo "root=/dev/mmcblk0p2 rootfstype=ext4 elevator=deadline fsck.repair=yes rootwait\
- snd_bcm2835.enable_headphones=1 snd_bcm2835.enable_hdmi=1 snd_bcm2835.enable_compat_alsa=1" > /mnt/boot/cmdline.txt && \
-
-cd $BaseWorkDir && \
-apt install pkg-config && \
-git clone https://github.com/raspberrypi/userland && \
-cd userland && \
-sed s/sudo// -i buildme && \
-./buildme --aarch64 /mnt && \
-mkdir -p /mnt/etc/ld.so.conf.d && \
-echo "/opt/vc/lib" > /mnt/etc/ld.so.conf.d/userland.conf && \
-mkdir -p /mnt/usr/local/bin && \
-cp -va build/bin/* /mnt/usr/local/bin && \
-
-umount -l /mnt/boot || /bin/true  && \
-umount -l /mnt || /bin/true  && \
-losetup –d /dev/loop0 && \
-
-cd $BaseWorkDir
-EOF
-```
-</details>
+Image: [ubuntu/server64](https://ubuntu.com/download/raspberry-pi/thank-you?version=20.04.1&architecture=arm64+raspi)
+new versions can be found here: [ubuntu/server/raspberrypi](https://ubuntu.com/download/raspberry-pi) download the 64bit version. (64bit required!!!)
 
 **copy the image on your SD card with:**
-Tool: [balena.io/etcher](https://www.balena.io/etcher/)
+Raspberry Pi Imager for Windows(https://downloads.raspberrypi.org/imager/imager_1.4.exe)
+Raspberry Pi Imager for macOS(https://downloads.raspberrypi.org/imager/imager_1.4.dmg)
+Raspberry Pi Imager for Ubuntu(https://downloads.raspberrypi.org/imager/imager_1.4_amd64.deb)
+new versions can be found here: [raspberry/downloads](https://www.raspberrypi.org/downloads/)
 
-First of all be sure that you run it on the raspberry:
-```sudo -i```
-```
-parted /dev/mmcblk0 "resizepart 2 -1"
-resize2fs /dev/mmcblk0p2
-```
+Before you start your pi copy the "ssh" file on the SDCard.
+download: [ssh/file](https://raw.githubusercontent.com/Trackhe/Raspberry64bitKubernetesServerDualstack/master/ssh)
 
-Configure it before you start with this Manuell:
-```
-raspi-config
-```
+[Another Guide for installing Ubuntu Server arm64 on Pi (and connect with W-Lan)](https://linuxize.com/post/how-to-install-ubuntu-on-raspberry-pi/)
 
---- Install Kubernetes Dualstack ---
 
-Run all at Root:
+--- First Steps after boot Pi. ---
+Connect with an SSH client to your Pi/'s
+
+login with username `ubuntu` and password `ubuntu`.
 ```
-sudo -i
+sudo apt update && sudo apt -y dist-upgrade
 ```
 
-Prepare the OS:
+install your dependencies and tools.
+```
+sudo apt -y install net-tools dphys-swapfile git
+```
 
+change your timezone. you can see your actually time on the rpi with `timedatectl` and set with
+```
+sudo dpkg-reconfigure tzdatasudo
+```
+if you want to use it in your script automaticly use   `timedatectl set-timezone 'Europe/Berlin'` here is a list [timezone/list](https://gist.github.com/adamgen/3f2c30361296bbb45ada43d83c1ac4e5)
+
+
+configure `gpu_mem`.
+```
+cat <<EOF | sudo tee -a /boot/firmware/usercfg.txt
+gpu_mem=16
+EOF
+```
+
+enable `cgroup_memory` for kubernetes.
+```
+sudo sh -c 'echo $(cat /boot/firmware/cmdline.txt) "cgroup_enable=cpuset cgroup_enable=memory cgroup_memory=1" > /boot/firmware/cmdline.txt'
+```
+
+Prepare OS.
 ```
 cat <<EOF | sudo tee /etc/sysctl.d/k8s.conf
 net.bridge.bridge-nf-call-ip6tables = 1
@@ -240,9 +64,27 @@ net.ipv4.ip_forward=1
 net.ipv6.conf.all.forwarding=1
 EOF
 ```
+and apply it.
 ```
-sysctl --system
+sudo sysctl --system
 ```
+
+change the hostname before we begin with kubernetes.
+you need to edit the hosts file with
+```
+sudo nano /etc/hosts
+```
+and in the hostname file.
+```
+sudo nano /etc/hostname
+```
+
+so you finished now then reboot.
+```
+sudo reboot
+```
+
+--- Install Kubernetes Dualstack ---
 
 Install Docker:
 ```
@@ -251,20 +93,20 @@ curl -fSLs https://get.docker.com | sudo sh
 
 Give Docker User root:
 ```
-usermod -aG docker pi
+sudo usermod -aG docker ubuntu
 ```
 
 Add the Docker apt repository:
 ```
-add-apt-repository \
-  "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+sudo add-apt-repository \
+  "deb [arch=arm64] https://download.docker.com/linux/ubuntu \
   $(lsb_release -cs) \
   stable"
 ```
 
 Set up the Docker daemon for autostart:
 ```
-cat > /etc/docker/daemon.json <<EOF
+sudo sh -c 'cat > /etc/docker/daemon.json <<EOF
 {
   "exec-opts": ["native.cgroupdriver=systemd"],
   "log-driver": "json-file",
@@ -273,25 +115,30 @@ cat > /etc/docker/daemon.json <<EOF
   },
   "storage-driver": "overlay2"
 }
-EOF
+EOF'
 ```
 ```
-mkdir -p /etc/systemd/system/docker.service.d && \
-systemctl enable docker
+sudo mkdir -p /etc/systemd/system/docker.service.d && \
+sudo systemctl enable docker
 ```
 
 Disable SWAP:
 ```
-dphys-swapfile swapoff && \
-dphys-swapfile uninstall && \
-systemctl disable dphys-swapfile
+sudo swapoff -a
+sudo dphys-swapfile swapoff && \
+sudo dphys-swapfile uninstall && \
+sudo systemctl disable dphys-swapfile
 ```
-When you gett dphys-swapfile not found `sudo apt-get install dphys-swapfile`
+
+Disable the Firewall if you have a Dedicated FW.
+```
+sudo ufw disable
+```
 
 First Step Install packages.cloud.google kubernetes.list:
 ```
-curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add - && \
-echo "deb http://apt.kubernetes.io/ kubernetes-xenial main" > /etc/apt/sources.list.d/kubernetes.list
+curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add - && \
+sudo sh -c 'echo "deb http://apt.kubernetes.io/ kubernetes-xenial main" > /etc/apt/sources.list.d/kubernetes.list'
 ```
 
 You will install these packages on all of your machines:
@@ -300,7 +147,7 @@ You will install these packages on all of your machines:
 * kubectl: the command line util to talk to your cluster.
 
 ```
-apt-get update && apt-get install -y kubelet kubeadm kubectl
+sudo apt-get update && sudo apt-get install -y kubelet kubeadm kubectl
 ```
 
 Soo you can use:
@@ -314,19 +161,16 @@ networking:
   podSubnet: 192.168.0.0/16
 EOF
 ```
-
+init master.
 ```
-kubeadm init --config kubeadm.yaml
+sudo kubeadm init --config kubeadm.yaml
 ```
-or  ```sudo kubeadm join``` with the required extra arguments. You get it after "kubeadm init" on Master.
-
-##Idont know why but you need `sudo` if you get command not found.
 
 Configure Kubectl:
 ```
-mkdir -p $HOME/.kube && \
-cp -i /etc/kubernetes/admin.conf $HOME/.kube/config && \
-chown $(id -u):$(id -g) $HOME/.kube/config
+sudo mkdir -p $HOME/.kube && \
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config && \
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
 ```
 
 So you need to deploy a Network Pod.
@@ -415,15 +259,14 @@ calicoctl create -f - < calicoip6.yaml
 Install Dashboard:
 
 ```
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.2/aio/deploy/recommended.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.3/aio/deploy/recommended.yaml
+```
+and Metrics Server
+```
+kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.3.7/components.yaml
 ```
 
-
-Clone Metrics Server:
-
-coming on next update back!
-
-Go back `cd ..` and download dashboard user, ClusterRoleBinding, deploy and get the login token.
+Download dashboard user, ClusterRoleBinding, deploy and get the login token.
 
 ```
 wget https://raw.githubusercontent.com/Trackhe/Rasbian64bitKubernetesServerDualstack/master/deployment/admin-user.yaml && \
@@ -433,13 +276,21 @@ kubectl apply -f admin-cluster-role-binding.yaml && \
 kubectl -n kubernetes-dashboard describe secret $(kubectl -n kubernetes-dashboard get secret | grep admin-user | awk '{print $1}')
 ```
 
-
 Now you can connect to the server with a terminal via `ssh -L 8001:localhost:8001 pi@piipaddresse` -> `su` -> `raspberry` or the password -> run `kubectl proxy --address='0.0.0.0' --accept-hosts='^*$'`
 and reach the Dashboard via `http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/#/overview?namespace=_all`
 
 For Mac terminal: `ssh -L 8001:localhost:8001 pi@piipaddresse`
-Linux Like Ubuntu : Unknown pls google
-Windows PShell : Unknown pls google
+Linux Like Ubuntu : Unknown pls use google
+Windows PShell : Unknown pls use google
+
+
+You need to edit the Deployment of Metrics Server.
+```
+- --kubelet-preferred-address-types=InternalIP
+- --kubelet-insecure-tls
+```
+
+A Part, to add Metallb as LoadBalancer and Longhorn for Cluster Storage, follows soon.
 
 A Part to make the Dashboard on the LAN Reachable follows soon.
 
