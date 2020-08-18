@@ -38,7 +38,7 @@ sudo apt -y install net-tools dphys-swapfile git
 
 change your timezone. you can see your actually time on the rpi with `timedatectl` and set with
 ```
-sudo dpkg-reconfigure tzdatasudo
+sudo dpkg-reconfigure tzdata
 ```
 if you want to use it in your script automaticly use   `timedatectl set-timezone 'Europe/Berlin'` here is a list [timezone/list](https://gist.github.com/adamgen/3f2c30361296bbb45ada43d83c1ac4e5)
 
