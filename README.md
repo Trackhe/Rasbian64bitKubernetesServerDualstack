@@ -12,9 +12,10 @@ Image: [ubuntu/server64](https://ubuntu.com/download/raspberry-pi/thank-you?vers
 new versions can be found here: [ubuntu/server/raspberrypi](https://ubuntu.com/download/raspberry-pi) download the 64bit version. (64bit required!!!)
 
 **copy the image on your SD card with:**
-Raspberry Pi Imager for Windows(https://downloads.raspberrypi.org/imager/imager_1.4.exe)
-Raspberry Pi Imager for macOS(https://downloads.raspberrypi.org/imager/imager_1.4.dmg)
-Raspberry Pi Imager for Ubuntu(https://downloads.raspberrypi.org/imager/imager_1.4_amd64.deb)
+Raspberry Pi Imager for Windows [Imager 1.4](https://downloads.raspberrypi.org/imager/imager_1.4.exe)
+Raspberry Pi Imager for macOS [Imager 1.4](https://downloads.raspberrypi.org/imager/imager_1.4.dmg)
+Raspberry Pi Imager for Ubuntu [Imager 1.4](https://downloads.raspberrypi.org/imager/imager_1.4_amd64.deb)
+
 new versions can be found here: [raspberry/downloads](https://www.raspberrypi.org/downloads/)
 
 Before you start your pi copy the "ssh" file on the SDCard.
@@ -161,10 +162,12 @@ networking:
   podSubnet: 192.168.0.0/16
 EOF
 ```
-init master.
+init master. up to this point everything is the same for master and cluster. The cluster is ready to join master at this point.
 ```
 sudo kubeadm init --config kubeadm.yaml
 ```
+
+Save you join command from output!!!
 
 Configure Kubectl:
 ```
@@ -256,6 +259,17 @@ EOF
 calicoctl create -f - < calicoip6.yaml
 ```
 
+now after you check all containers all running with `kubectl get pods --all-namespaces`.
+```
+wget https://raw.githubusercontent.com/Trackhe/Raspberry64bitKubernetesServerDualstack/master/deployment/calicov6.yaml && \
+kubectl apply -f calicov6.yaml
+```
+
+After that be sure your Server reboot and start the Kubelet service. you can test it by using `sudo service kubelet service`.
+if the service after the reboot not running or running into error 255 then use once `kubeadm init phase kubelet-start` that should be fix it.
+
+Now its time to join your worker to the master with your saved command. use `sudo kubeadm join ip:port --token token.name --discovery-token-ca-cert-hash sha256:token`
+
 Install Dashboard:
 
 ```
@@ -263,15 +277,16 @@ kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.3/a
 ```
 and Metrics Server
 ```
-kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.3.7/components.yaml
+wget https://raw.githubusercontent.com/Trackhe/Raspberry64bitKubernetesServerDualstack/master/deployment/components.yaml && \
+kubectl apply -f components.yaml
 ```
 
 Download dashboard user, ClusterRoleBinding, deploy and get the login token.
 
 ```
-wget https://raw.githubusercontent.com/Trackhe/Rasbian64bitKubernetesServerDualstack/master/deployment/admin-user.yaml && \
+wget https://raw.githubusercontent.com/Trackhe/Raspberry64bitKubernetesServerDualstack/master/deployment/admin-user.yaml && \
 kubectl apply -f admin-user.yaml && \
-wget https://raw.githubusercontent.com/Trackhe/Rasbian64bitKubernetesServerDualstack/master/deployment/admin-cluster-role-binding.yaml && \
+wget https://raw.githubusercontent.com/Trackhe/Raspberry64bitKubernetesServerDualstack/master/deployment/admin-cluster-role-binding.yaml && \
 kubectl apply -f admin-cluster-role-binding.yaml && \
 kubectl -n kubernetes-dashboard describe secret $(kubectl -n kubernetes-dashboard get secret | grep admin-user | awk '{print $1}')
 ```
@@ -284,12 +299,6 @@ Linux Like Ubuntu : Unknown pls use google
 Windows PShell : Unknown pls use google
 
 
-You need to edit the Deployment of Metrics Server.
-```
-- --kubelet-preferred-address-types=InternalIP
-- --kubelet-insecure-tls
-```
-
 A Part, to add Metallb as LoadBalancer and Longhorn for Cluster Storage, follows soon.
 
 A Part to make the Dashboard on the LAN Reachable follows soon.
@@ -297,7 +306,5 @@ A Part to make the Dashboard on the LAN Reachable follows soon.
 ... Coming soon...
 
 I hope you enjoy. Best Regards.
-
-[![Paypal Donate Button](https://raw.githubusercontent.com/Trackhe/Rasbian64bitKubernetesServerDualstack/master/paypal-donate-button-.png)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=QY8TN4B4L87F4&source=url)
 
 Feel free to make improvements. and share it with us.
