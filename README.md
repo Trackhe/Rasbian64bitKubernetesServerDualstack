@@ -198,31 +198,11 @@ kube-system   kube-scheduler-hostname                    1/1     Running   1    
 ```
 
 Modifying Calico to support IPv6
-We need to make the following changes to the calico.yaml file:
+```
+wget https://raw.githubusercontent.com/Trackhe/Raspberry64bitKubernetesServerDualstack/master/deployment/calicov6.yaml && \
+kubectl apply -f calicov6.yaml
+```
 
-The ipam part (the ConfigMap) should look as follows:
-```
-"ipam": {
-        "type": "calico-ipam",
-        "assign_ipv4": "true",
-        "assign_ipv6": "true"
-},
-```
-Pay very close attention to the indentation here (even in the JSON part)
-
-Add the following environment variables to the calico-node container (environment variables start at about line 633):
-```
-env:
- - name: IP6
-    value: "autodetect"
- - name: FELIX_IPV6SUPPORT
-    value: "true"
-```
-Apply the file now to patch the existing deployment:
-
-```
-kubectl apply -f calico.yaml
-```
 Again, wait until all the Calico pods are running and have passed the readiness probes.
 
 You need to untain your node to run pods on master Node:
@@ -259,16 +239,10 @@ EOF
 calicoctl create -f - < calicoip6.yaml
 ```
 
-now after you check all containers all running with `kubectl get pods --all-namespaces`.
-```
-wget https://raw.githubusercontent.com/Trackhe/Raspberry64bitKubernetesServerDualstack/master/deployment/calicov6.yaml && \
-kubectl apply -f calicov6.yaml
-```
-
 After that be sure your Server reboot and start the Kubelet service. you can test it by using `sudo service kubelet service`.
 if the service after the reboot not running or running into error 255 then use once `kubeadm init phase kubelet-start` that should be fix it.
 
-Now its time to join your worker to the master with your saved command. use `sudo kubeadm join ip:port --token token.name --discovery-token-ca-cert-hash sha256:token`
+Now its time to join your worker to the master with your saved command. use `sudo kubeadm join ip:port --token token.name --discovery-token-ca-cert-hash sha256:token` if you forget the command use `sudo kubeadm token create --print-join-command` on master to get a new.
 
 Install Dashboard:
 
@@ -300,6 +274,39 @@ Windows PShell : Unknown pls use google
 
 
 A Part, to add Metallb as LoadBalancer and Longhorn for Cluster Storage, follows soon.
+
+```
+KUBE_EDITOR="nano" kubectl edit configmap -n kube-system kube-proxy
+```
+and set
+```
+apiVersion: kubeproxy.config.k8s.io/v1alpha1
+kind: KubeProxyConfiguration
+mode: "ipvs"
+ipvs:
+  strictARP: true
+```
+
+```
+kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.9.3/manifests/namespace.yaml
+kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.9.3/manifests/metallb.yaml
+# On first install only
+kubectl create secret generic -n metallb-system memberlist --from-literal=secretkey="$(openssl rand -base64 128)"
+```
+and its maybe installed.
+
+Lets Setup Longhorn for PVCs
+
+```
+sudo apt install jq %% \
+curl -sSfL https://raw.githubusercontent.com/longhorn/longhorn/master/scripts/environment_check.sh | sudo bash
+```
+
+```
+kubectl apply -f https://raw.githubusercontent.com/longhorn/longhorn/master/deploy/longhorn.yaml
+```
+
+
 
 A Part to make the Dashboard on the LAN Reachable follows soon.
 
