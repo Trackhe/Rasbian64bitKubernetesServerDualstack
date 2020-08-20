@@ -239,8 +239,9 @@ EOF
 calicoctl create -f - < calicoip6.yaml
 ```
 
-After that be sure your Server reboot and start the Kubelet service. you can test it by using `sudo service kubelet service`.
-if the service after the reboot not running or running into error 255 then use once `kubeadm init phase kubelet-start` that should be fix it.
+After that be sure your Server reboot and start the Kubelet service. you can test it by using `sudo service kubelet status`.
+if the service after the reboot not running or running into error 255 then use once `sudo kubeadm init phase kubelet-start` that should be fix it.
+you can boot your workers also if you head already join they. if thes dosn come back to ready use `sudo kubeadm join --skip-phases=preflight ip:port --token token.name --discovery-token-ca-cert-hash sha256:token`
 
 Now its time to join your worker to the master with your saved command. use `sudo kubeadm join ip:port --token token.name --discovery-token-ca-cert-hash sha256:token` if you forget the command use `sudo kubeadm token create --print-join-command` on master to get a new.
 
@@ -287,25 +288,14 @@ ipvs:
   strictARP: true
 ```
 
+create in kubernetes dashboard 
+
 ```
 kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.9.3/manifests/namespace.yaml
 kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.9.3/manifests/metallb.yaml
 # On first install only
 kubectl create secret generic -n metallb-system memberlist --from-literal=secretkey="$(openssl rand -base64 128)"
 ```
-and its maybe installed.
-
-Lets Setup Longhorn for PVCs
-
-```
-sudo apt install jq %% \
-curl -sSfL https://raw.githubusercontent.com/longhorn/longhorn/master/scripts/environment_check.sh | sudo bash
-```
-
-```
-kubectl apply -f https://raw.githubusercontent.com/longhorn/longhorn/master/deploy/longhorn.yaml
-```
-
 
 
 A Part to make the Dashboard on the LAN Reachable follows soon.
