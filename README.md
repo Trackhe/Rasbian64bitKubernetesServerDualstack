@@ -37,6 +37,13 @@ install your dependencies and tools.
 sudo apt -y install net-tools dphys-swapfile git
 ```
 
+Downgrade Fireall to legacy.
+```
+wget https://raw.githubusercontent.com/theAkito/rancher-helpers/master/scripts/debian-buster_fix.sh && \
+chmod +x debian-buster_fix.sh && \
+sudo ./debian-buster_fix.sh
+```
+
 change your timezone. you can see your actually time on the rpi with `timedatectl` and set with
 ```
 sudo dpkg-reconfigure tzdata
@@ -129,11 +136,6 @@ sudo swapoff -a
 sudo dphys-swapfile swapoff && \
 sudo dphys-swapfile uninstall && \
 sudo systemctl disable dphys-swapfile
-```
-
-Disable the Firewall if you have a Dedicated FW.
-```
-sudo ufw disable
 ```
 
 First Step Install packages.cloud.google kubernetes.list:
@@ -288,13 +290,33 @@ ipvs:
   strictARP: true
 ```
 
-create in kubernetes dashboard 
+create in kubernetes dashboard a config map !!edit the ip adresses.
+```
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: metallb-system
+  name: config
+data:
+  config: |
+    address-pools:
+    - name: default
+      protocol: layer2
+      addresses:
+      - 192.168.192.243-192.168.192.254
+```
 
 ```
 kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.9.3/manifests/namespace.yaml
 kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.9.3/manifests/metallb.yaml
 # On first install only
 kubectl create secret generic -n metallb-system memberlist --from-literal=secretkey="$(openssl rand -base64 128)"
+```
+
+You can also install weave-scope dashboard.
+```
+wget https://raw.githubusercontent.com/Trackhe/Raspberry64bitKubernetesServerDualstack/master/deployment/scope.yaml && \
+kubectl apply -f components.yaml
 ```
 
 
