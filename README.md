@@ -276,8 +276,7 @@ Linux Like Ubuntu : Unknown pls use google
 Windows PShell : Unknown pls use google
 
 
-A Part, to add Metallb as LoadBalancer and Longhorn for Cluster Storage, follows soon.
-
+Metallb install:
 ```
 KUBE_EDITOR="nano" kubectl edit configmap -n kube-system kube-proxy
 ```
@@ -311,13 +310,49 @@ data:
       addresses:
       - 192.168.178.243-192.168.178.254
 ```
+and change the configmap coredns.   If you dont see the coredns config map. Select all Namespaces and under Configuration and Storage you find Config maps
+```
+data:
+  Corefile: |
+    .:53 {
+        log
+        errors
+        health {
+           lameduck 5s
+        }
+        ready
+        template ANY ANY fritz.box {
+          rcode NXDOMAIN
+        }
+        kubernetes cluster.local in-addr.arpa ip6.arpa {
+           pods insecure
+           fallthrough in-addr.arpa ip6.arpa
+           ttl 30
+        }
+        prometheus :9153
+        forward . /etc/resolv.conf
+        cache 30
+        loop
+        reload
+        loadbalance
+    }
+```
 
-You can also install weave-scope dashboard.
+Longhorn install:
+```
+git clone https://github.com/longhorn/longhorn.git && \
+cd longhorn/chart/ && \
+rm values.yaml && \
+wget https://raw.githubusercontent.com/Trackhe/Raspberry64bitKubernetesServerDualstack/master/deployment/values.yaml && \
+kubectl create namespace longhorn-system && \
+helm install longhorn . --namespace longhorn-system
+```
+
+You can also install weave-scope dashboard. This is not so Important.
 ```
 wget https://raw.githubusercontent.com/Trackhe/Raspberry64bitKubernetesServerDualstack/master/deployment/scope.yaml && \
 kubectl apply -f components.yaml
 ```
-
 
 A Part to make the Dashboard on the LAN Reachable follows soon.
 
