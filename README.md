@@ -95,13 +95,10 @@ sudo reboot
 --- Install Kubernetes Dualstack ---
 
 Install Docker:
-```
-curl -fSLs https://get.docker.com | sudo sh
-```
 
-Give Docker User root:
 ```
-sudo usermod -aG docker ubuntu
+sudo apt-get install apt-transport-https ca-certificates curl gnupg-agent software-properties-common && \
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
 ```
 
 Add the Docker apt repository:
@@ -112,6 +109,20 @@ sudo add-apt-repository \
   stable"
 ```
 
+now you can choose:
+```
+sudo apt update && \
+sudo apt-get install docker-ce docker-ce-cli containerd.io
+```
+or
+```
+curl -fSLs https://get.docker.com | sudo sh
+```
+
+Give Docker User root:
+```
+sudo usermod -aG docker ubuntu
+```
 Set up the Docker daemon for autostart:
 ```
 sudo sh -c 'cat > /etc/docker/daemon.json <<EOF
@@ -127,7 +138,8 @@ EOF'
 ```
 ```
 sudo mkdir -p /etc/systemd/system/docker.service.d && \
-sudo systemctl enable docker
+sudo systemctl enable docker && \
+sudo systemctl restart docker
 ```
 
 Disable SWAP:
