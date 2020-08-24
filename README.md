@@ -109,13 +109,8 @@ sudo add-apt-repository \
   stable"
 ```
 
-now you can choose:
 ```
 sudo apt update && \
-sudo apt-get install docker-ce docker-ce-cli containerd.io
-```
-or
-```
 curl -fSLs https://get.docker.com | sudo sh
 ```
 
