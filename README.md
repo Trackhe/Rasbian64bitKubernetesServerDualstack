@@ -162,14 +162,20 @@ sudo apt-get update && sudo apt-get install -y kubelet kubeadm kubectl
 
 Soo you can use:
 ```
-cat >> kubeadm.yaml << EOF
+cat >> kubeadm.yaml << EOF                                                          
 apiVersion: kubeadm.k8s.io/v1beta2
 featureGates:
-  IPv6DualStack: true
+IPv6DualStack: true
 kind: ClusterConfiguration
 networking:
-  podSubnet: 200.200.0.0/16,fd7a:cccc:dddd::/48
-  ServiceSubnet: 10.200.0.0/16,fd00:0003:0:0:1::/80
+podSubnet: 200.200.0.0/16,fd7a:cccc:dddd::/48
+ServiceSubnet: 10.200.0.0/16,fd00:0002:0:0:1::/80
+---
+apiVersion: kubeadm.k8s.io/v1beta2
+kind: InitConfiguration
+nodeRegistration:
+kubeletExtraArgs:
+  node-ip: "192.168.178.240,fd11:1111:1111:1111:dea6:32ff:fe34:ed61"
 EOF
 ```
 init master. up to this point everything is the same for master and cluster. The cluster is ready to join master at this point.
@@ -296,28 +302,30 @@ and change the configmap coredns.   If you dont see the coredns config map. Sele
 ```
 data:
   Corefile: |
-    .:53 {
-        log
-        errors
-        health {
-           lameduck 5s
-        }
-        ready
-        template ANY ANY fritz.box {
-          rcode NXDOMAIN
-        }
-        kubernetes cluster.local in-addr.arpa ip6.arpa {
-           pods insecure
-           fallthrough in-addr.arpa ip6.arpa
-           ttl 30
-        }
-        prometheus :9153
-        forward . /etc/resolv.conf
-        cache 30
-        loop
-        reload
-        loadbalance
-    }
+  .:53 {
+      log
+      errors
+      health {
+         lameduck 5s
+      }
+      ready
+      template ANY ANY fritz.box {
+        rcode NXDOMAIN
+      }
+      kubernetes cluster.local in-addr.arpa ip6.arpa {
+         pods insecure
+         fallthrough in-addr.arpa ip6.arpa
+         ttl 30
+      }
+      prometheus :9153
+      forward . /etc/resolv.conf {
+         max_concurrent 1000
+      }
+      cache 30
+      loop
+      reload
+      loadbalance
+  }
 ```
 
 Longhorn install:
