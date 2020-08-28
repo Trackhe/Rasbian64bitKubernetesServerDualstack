@@ -29,7 +29,7 @@ persistence:
 csi:
   attacherImage: raspbernetes/csi-external-attacher
   attacherImageTag: latest
-  provisionerImage: raspbernetes/csi-external-provisioner
+  provisionerImage: raspbernetes/csi-external-provisioner:1.6.0
   provisionerImageTag: latest
   nodeDriverRegistrarImage: raspbernetes/csi-node-driver-registrar
   nodeDriverRegistrarImageTag: latest

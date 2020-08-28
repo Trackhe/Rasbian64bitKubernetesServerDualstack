@@ -168,7 +168,8 @@ featureGates:
   IPv6DualStack: true
 kind: ClusterConfiguration
 networking:
-  podSubnet: 200.200.0.0/16
+  podSubnet: 200.200.0.0/16,fd7a:cccc:dddd::/48
+  ServiceSubnet: 10.200.0.0/16,fd00:0003:0:0:1::/80
 EOF
 ```
 init master. up to this point everything is the same for master and cluster. The cluster is ready to join master at this point.
@@ -219,35 +220,6 @@ You need to untain your node to run pods on master Node:
 kubectl taint nodes --all node-role.kubernetes.io/master-
 ```
 
-Install Calicoctl:
-
-```
-kubectl apply -f https://docs.projectcalico.org/manifests/calicoctl.yaml
-```
-
-wait a second to create the container and do
-
-```
-alias calicoctl="kubectl exec -i -n kube-system calicoctl -- /calicoctl"
-```
-now you can use Calicoctl.
-
-```
-cat >> calicoip6.yaml << EOF
-apiVersion: projectcalico.org/v3
-kind: IPPool
-metadata:
-  name: default-ipv6-ippool
-spec:
-  cidr: fd7a:cccc:dddd::/48
-  natOutgoing: true
-EOF
-```
-
-```
-calicoctl create -f - < calicoip6.yaml
-```
-
 After that be sure your Server reboot and start the Kubelet service. you can test it by using `sudo service kubelet status`.
 if the service after the reboot not running or running into error 255 then use once `sudo kubeadm init --skip-phases=preflight --config kubeadm.yaml` that should be fix it.
 you can boot your workers also if you head already join they. if thes dosn come back to ready use `sudo kubeadm join --skip-phases=preflight ip:port --token token.name --discovery-token-ca-cert-hash sha256:token`
@@ -267,6 +239,8 @@ kubectl apply -f components.yaml
 
 Download dashboard user, ClusterRoleBinding, deploy and get the login token.
 
+
+!!!   Not working for 1.19 please use https://www.replex.io/blog/how-to-install-access-and-add-heapster-metrics-to-the-kubernetes-dashboard
 ```
 wget https://raw.githubusercontent.com/Trackhe/Raspberry64bitKubernetesServerDualstack/master/deployment/admin-user.yaml && \
 kubectl apply -f admin-user.yaml && \
@@ -302,7 +276,7 @@ kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.9.3/manife
 kubectl create secret generic -n metallb-system memberlist --from-literal=secretkey="$(openssl rand -base64 128)"
 ```
 
-create in kubernetes dashboard a config map !!edit the ip adresses.
+create in kubernetes dashboard a config map !!edit the ip adresses. to your lan reachable adresses.
 ```
 apiVersion: v1
 kind: ConfigMap
@@ -316,6 +290,7 @@ data:
       protocol: layer2
       addresses:
       - 192.168.178.243-192.168.178.254
+      - fd11:1111:1111:1111/64
 ```
 and change the configmap coredns.   If you dont see the coredns config map. Select all Namespaces and under Configuration and Storage you find Config maps
 ```
@@ -347,6 +322,7 @@ data:
 
 Longhorn install:
 ```
+sudo snap install helm --classic && \
 git clone https://github.com/longhorn/longhorn.git && \
 cd longhorn/chart/ && \
 rm values.yaml && \
@@ -366,5 +342,7 @@ A Part to make the Dashboard on the LAN Reachable follows soon.
 ... Coming soon...
 
 I hope you enjoy. Best Regards.
+
+If you need calicoctl write an issue.
 
 Feel free to make improvements. and share it with us.
