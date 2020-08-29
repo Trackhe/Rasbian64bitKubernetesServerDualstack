@@ -160,6 +160,7 @@ You will install these packages on all of your machines:
 sudo apt-get update && sudo apt-get install -y kubelet kubeadm kubectl
 ```
 
+serviceSubnet can be only /108 or greater becuase https://github.com/kubernetes/kubernetes/pull/90115
 Soo you can use:
 ```
 cat >> kubeadm.yaml << EOF                                                          
@@ -169,13 +170,18 @@ IPv6DualStack: true
 kind: ClusterConfiguration
 networking:
 podSubnet: 200.200.0.0/16,fd7a:cccc:dddd::/48
-ServiceSubnet: 10.200.0.0/16,fd00:0002:0:0:1::/80
+serviceSubnet: 10.200.0.0/16,fd00:0002:0:0:1::/108
 ---
 apiVersion: kubeadm.k8s.io/v1beta2
 kind: InitConfiguration
 nodeRegistration:
 kubeletExtraArgs:
   node-ip: "192.168.178.240,fd11:1111:1111:1111:dea6:32ff:fe34:ed61"
+---
+---
+apiVersion: kubeproxy.config.k8s.io/v1alpha1
+kind: KubeProxyConfiguration
+mode: ipvs
 EOF
 ```
 init master. up to this point everything is the same for master and cluster. The cluster is ready to join master at this point.
@@ -296,7 +302,7 @@ data:
       protocol: layer2
       addresses:
       - 192.168.178.243-192.168.178.254
-      - fd11:1111:1111:1111/64
+      - fd11:1111:1111:1111::/108
 ```
 and change the configmap coredns.   If you dont see the coredns config map. Select all Namespaces and under Configuration and Storage you find Config maps
 ```

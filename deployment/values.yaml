@@ -28,11 +28,11 @@ persistence:
 
 csi:
   attacherImage: raspbernetes/csi-external-attacher
-  attacherImageTag: latest
-  provisionerImage: raspbernetes/csi-external-provisioner:1.6.0
-  provisionerImageTag: latest
+  attacherImageTag: 2.2.0
+  provisionerImage: raspbernetes/csi-external-provisioner
+  provisionerImageTag: 1.6.0
   nodeDriverRegistrarImage: raspbernetes/csi-node-driver-registrar
-  nodeDriverRegistrarImageTag: latest
+  nodeDriverRegistrarImageTag: 1.3.0
   resizerImage: raspbernetes/csi-external-resizer
   resizerImageTag: latest
   kubeletRootDir: ~
