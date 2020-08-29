@@ -97,7 +97,7 @@ sudo reboot
 Install Docker:
 
 ```
-sudo apt-get install apt-transport-https ca-certificates curl gnupg-agent software-properties-common && \
+sudo apt-get install -y apt-transport-https ca-certificates curl gnupg-agent software-properties-common && \
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
 ```
 
@@ -165,23 +165,18 @@ Soo you can use:
 ```
 cat >> kubeadm.yaml << EOF                                                          
 apiVersion: kubeadm.k8s.io/v1beta2
-featureGates:
-IPv6DualStack: true
-kind: ClusterConfiguration
-networking:
-podSubnet: 200.200.0.0/16,fd7a:cccc:dddd::/48
-serviceSubnet: 10.200.0.0/16,fd00:0002:0:0:1::/108
----
-apiVersion: kubeadm.k8s.io/v1beta2
 kind: InitConfiguration
 nodeRegistration:
-kubeletExtraArgs:
-  node-ip: "192.168.178.240,fd11:1111:1111:1111:dea6:32ff:fe34:ed61"
+  kubeletExtraArgs:
+    node-ip: "192.168.178.240,fd11:1111:1111:1111:dea6:32ff:fe34:ed61"
 ---
----
-apiVersion: kubeproxy.config.k8s.io/v1alpha1
-kind: KubeProxyConfiguration
-mode: ipvs
+apiVersion: kubeadm.k8s.io/v1beta2
+kind: ClusterConfiguration
+featureGates:
+  IPv6DualStack: true
+networking:
+  podSubnet: 200.200.0.0/16,fd7a:cccc:dddd::/48
+  serviceSubnet: 10.200.0.0/16,fd00:0002:0:0:1::/108
 EOF
 ```
 init master. up to this point everything is the same for master and cluster. The cluster is ready to join master at this point.
@@ -258,7 +253,7 @@ wget https://raw.githubusercontent.com/Trackhe/Raspberry64bitKubernetesServerDua
 kubectl apply -f admin-user.yaml && \
 wget https://raw.githubusercontent.com/Trackhe/Raspberry64bitKubernetesServerDualstack/master/deployment/admin-cluster-role-binding.yaml && \
 kubectl apply -f admin-cluster-role-binding.yaml && \
-kubectl -n kubernetes-dashboard describe secret $(kubectl -n kubernetes-dashboard get secret | grep admin-user | awk '{print $1}')
+kubectl -n kubernetes-dashboard describe secret $(kubectl -n kubernetes-dashboard get secret | grep dashboard-admin-sa | awk '{print $1}')
 ```
 
 Now you can connect to the server with a terminal via `ssh -L 8001:localhost:8001 pi@piipaddresse` -> `su` -> `raspberry` or the password -> run `kubectl proxy --address='0.0.0.0' --accept-hosts='^*$'`
