@@ -12,17 +12,12 @@ Image: [ubuntu/server64](https://ubuntu.com/download/raspberry-pi/thank-you?vers
 new versions can be found here: [ubuntu/server/raspberrypi](https://ubuntu.com/download/raspberry-pi) download the 64bit version. (64bit required!!!)
 
 **copy the image on your SD card with:**
-Raspberry Pi Imager for Windows [Imager 1.4](https://downloads.raspberrypi.org/imager/imager_1.4.exe)
-Raspberry Pi Imager for macOS [Imager 1.4](https://downloads.raspberrypi.org/imager/imager_1.4.dmg)
-Raspberry Pi Imager for Ubuntu [Imager 1.4](https://downloads.raspberrypi.org/imager/imager_1.4_amd64.deb)
-
-new versions can be found here: [raspberry/downloads](https://www.raspberrypi.org/downloads/)
+Raspberry Pi Imager [Imager](https://www.raspberrypi.org/software/)
 
 Before you start your pi copy the "ssh" file on the SDCard.
 download: [ssh/file](https://raw.githubusercontent.com/Trackhe/Raspberry64bitKubernetesServerDualstack/master/ssh)
 
 [Another Guide for installing Ubuntu Server arm64 on Pi (and connect with W-Lan)](https://linuxize.com/post/how-to-install-ubuntu-on-raspberry-pi/)
-
 
 --- First Steps after boot Pi. ---
 Connect with an SSH client to your Pi/'s
@@ -97,16 +92,8 @@ sudo reboot
 Install Docker:
 
 ```
-sudo apt-get install -y apt-transport-https ca-certificates curl gnupg-agent software-properties-common && \
+sudo apt-get install -y apt-transport-https gnupg-agent && \
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-```
-
-Add the Docker apt repository:
-```
-sudo add-apt-repository \
-  "deb [arch=arm64] https://download.docker.com/linux/ubuntu \
-  $(lsb_release -cs) \
-  stable"
 ```
 
 ```
@@ -236,7 +223,7 @@ Now its time to join your worker to the master with your saved command. use `sud
 Install Dashboard:
 
 ```
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.3/aio/deploy/recommended.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.1.0/aio/deploy/recommended.yaml
 ```
 and Metrics Server
 ```
@@ -266,20 +253,15 @@ Windows PShell : Unknown pls use google
 
 Metallb install:
 ```
-KUBE_EDITOR="nano" kubectl edit configmap -n kube-system kube-proxy
-```
-and set
-```
-apiVersion: kubeproxy.config.k8s.io/v1alpha1
-kind: KubeProxyConfiguration
-mode: "ipvs"
-ipvs:
-  strictARP: true
+kubectl get configmap kube-proxy -n kube-system -o yaml | \
+sed -e "s/strictARP: false/strictARP: true/" | \
+sed -e "s/mode: ""/mode: "ipvs"/" | \
+kubectl apply -f - -n kube-system
 ```
 
 ```
-kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.9.3/manifests/namespace.yaml && \
-kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.9.3/manifests/metallb.yaml && \
+kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.9.5/manifests/namespace.yaml && \
+kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.9.5/manifests/metallb.yaml && \
 kubectl create secret generic -n metallb-system memberlist --from-literal=secretkey="$(openssl rand -base64 128)"
 ```
 
@@ -329,6 +311,13 @@ data:
   }
 ```
 
+//Optional
+Ceph install
+```
+
+```
+
+//Optional (Not Updated)
 Longhorn install:
 ```
 sudo snap install helm --classic && \
