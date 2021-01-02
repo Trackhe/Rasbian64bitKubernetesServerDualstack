@@ -1,5 +1,5 @@
 ---
-- name: Ping and test Reaktion Time of All Nodes.
+- name: Ping and test Reaktion on All Nodes.
   hosts: worker
   gather_facts: false
   tasks:
@@ -7,8 +7,8 @@
       action: ping
 
     - name: Test Ping.
-      net_ping:
-        dest: 192.168.178.1
+      shell: ping -c 1 {{ inventory_hostname }}
+      ignore_errors: true
 
     - name: Apt Update.
       apt: update_cache=yes force_apt_get=yes cache_valid_time=3600
