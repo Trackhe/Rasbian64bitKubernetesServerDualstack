@@ -10,7 +10,7 @@
       shell: ping -c 1 {{ inventory_hostname }}
       ignore_errors: true
       register: result
-      debug:
+    - debug:
         msg: "{{ result['stdout_lines'] }}"
 
     - name: Apt Update.
