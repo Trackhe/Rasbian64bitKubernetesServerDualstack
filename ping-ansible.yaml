@@ -1,6 +1,6 @@
 ---
-- name: Ping all Hosts.
-  hosts: raspnodes
+- name: Test Ping
+  hosts: all
   tasks:
-  - name: Test Ping
-    - action: ping
+    - name: Test Ping
+      action: ping
