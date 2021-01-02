@@ -10,8 +10,6 @@
       shell: ping -c 1 {{ inventory_hostname }}
       ignore_errors: true
       register: result
-
-    - name: Show result
       debug:
         msg: "{{ result['stdout_lines'] }}"
 
