@@ -1,6 +1,8 @@
 ---
-- name: Test Ping
+- name: Ping All Nodes.
   hosts: all
+  gather_facts: false
   tasks:
     - name: Test Ping
+      delegate_to: master
       action: ping
