@@ -1,15 +1,8 @@
 ---
-- name: Ping and test Reaktion Time of All Nodes.
+- name: Update/Upgrade All Nodes.
   hosts: worker
   gather_facts: false
   tasks:
-    - name: Ping all Nodes.
-      action: ping
-
-    - name: Test Ping.
-      shell: ping -c 1 {{ inventory_hostname }}
-      ignore_errors: true
-
     - name: Apt Update.
       apt: update_cache=yes force_apt_get=yes cache_valid_time=3600
 
