@@ -3,6 +3,8 @@ collections:
   - name: ansible.netcommon
     source: https://galaxy.ansible.com
 
+
+---
 - name: Ping and test Reaktion Time of All Nodes.
   hosts: worker
   gather_facts: false
