@@ -8,7 +8,7 @@
 
     - name: Test Ping.
       ansible.netcommon.net_ping:
-        dest: {{ inventory_hostname }}
+        dest: 192.168.178.1
 
     - name: Apt Update.
       apt: update_cache=yes force_apt_get=yes cache_valid_time=3600
