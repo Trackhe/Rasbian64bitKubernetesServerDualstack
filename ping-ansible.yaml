@@ -9,6 +9,11 @@
     - name: Test Ping.
       shell: ping -c 1 {{ inventory_hostname }}
       ignore_errors: true
+      register: result
+
+    - name: Show result
+      debug:
+        msg: "{{ result['stdout_lines'] }}"
 
     - name: Apt Update.
       apt: update_cache=yes force_apt_get=yes cache_valid_time=3600
