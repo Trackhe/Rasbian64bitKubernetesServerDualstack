@@ -2,15 +2,12 @@
 - name: Ping and test Reaktion Time of All Nodes.
   hosts: worker
   gather_facts: false
-  collections:
-    - name: ansible.netcommon
-      source: https://galaxy.ansible.com
   tasks:
     - name: Ping all Nodes.
       action: ping
 
     - name: Test Ping.
-      ansible.netcommon.net_ping:
+      net_ping:
         dest: 192.168.178.1
 
     - name: Apt Update.
