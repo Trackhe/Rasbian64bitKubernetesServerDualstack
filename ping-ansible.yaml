@@ -7,7 +7,7 @@
       action: ping
 
     - name: Test Ping time.
-      local_action: command ping -c 4 {{ inventory_hostname }}
+      local_action: command ifconfig
       ignore_errors: true
       register: result
       diff: no
