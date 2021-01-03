@@ -15,7 +15,7 @@
         msg: "{{ resultifconfiga['stdout_lines'] }}"
 
     - name: Test ifconfig.
-      local_action: shell ps
+      local_action: command ps
       ignore_errors: true
       register: resultifconfig
       changed_when: false
