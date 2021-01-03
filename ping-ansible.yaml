@@ -6,10 +6,11 @@
     - name: Ping all Nodes.
       action: ping
 
-    - name: Test Ping.
-      local_action: command ping -c 1 {{ inventory_hostname }}
+    - name: Test Ping time.
+      local_action: command ping -c 4 {{ inventory_hostname }}
       ignore_errors: true
       register: result
+      diff: no
     - debug:
         msg: "{{ result['stdout_lines'] }}"
 
