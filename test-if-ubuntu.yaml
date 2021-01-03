@@ -1,7 +1,7 @@
 ---
 - name: Test If Ubuntu on All Nodes.
   hosts: worker
-  gather_facts: false
+  gather_facts: true
   tasks:
     - name: Test If Ubuntu.
       action: ping
