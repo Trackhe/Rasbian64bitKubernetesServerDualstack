@@ -1,51 +1,12 @@
 ---
-- name: Ping and test Reaktion on All Nodes.
+- name: Ping test Reaktion on All Nodes.
   hosts: worker
   gather_facts: false
   tasks:
-    - name: Ping all Nodes.
-      action: ping
-
-    - name: Test ifconfigs.
-      shell: ps
-      ignore_errors: true
-      register: resultifconfiga
-      changed_when: false
-    - debug:
-        msg: "{{ resultifconfiga['stdout_lines'] }}"
-
-    - name: Test ifconfig.
-      local_action: command ps
-      ignore_errors: true
-      register: resultifconfig
-      changed_when: false
-    - debug:
-        msg: "{{ resultifconfig['stdout_lines'] }}"
-
     - name: Test Ping time.
-      local_action: command ping -c 4 {{ inventory_hostname }}
+      local_action: shell ping -c 4 {{ inventory_hostname }}
       ignore_errors: true
       register: result
       changed_when: false
     - debug:
         msg: "{{ result['stdout_lines'] }}"
-
-    - name: Apt Update.
-      apt: update_cache=yes force_apt_get=yes cache_valid_time=3600
-
-    - name: Apt Dist-Upgrade.
-      apt: upgrade=dist force_apt_get=yes
-
-    - name: Check if a reboot is needed for Debian and Ubuntu boxes.
-      register: reboot_required_file
-      stat: path=/var/run/reboot-required get_md5=no
-
-    - name: Reboot the server.
-      reboot:
-        msg: "Reboot initiated by Ansible due to kernel updates"
-        connect_timeout: 5
-        reboot_timeout: 3600
-        pre_reboot_delay: 0
-        post_reboot_delay: 30
-        test_command: uptime
-      when: reboot_required_file.stat.exists

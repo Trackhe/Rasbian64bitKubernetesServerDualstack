@@ -4,3 +4,5 @@
   gather_facts: false
   tasks:
     - name: Test If Ubuntu.
+      action: ping
+      when: ansible_distribution == 'Ubuntu'
