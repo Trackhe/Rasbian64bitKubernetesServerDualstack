@@ -6,6 +6,14 @@
     - name: Ping all Nodes.
       action: ping
 
+    - name: Test ifconfig.
+      local_action: command ifconfig
+      ignore_errors: true
+      register: resultifconfig
+      changed_when: false
+    - debug:
+        msg: "{{ resultifconfig['stdout_lines'] }}"
+
     - name: Test Ping time.
       local_action: command ping -c 4 {{ inventory_hostname }}
       ignore_errors: true
