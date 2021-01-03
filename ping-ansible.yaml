@@ -1,21 +1,18 @@
 ---
-- name: a play that runs entirely on the ansible host
-  hosts: 127.0.0.1
-  connection: local
-  tasks:
-    - name: Test Ping.
-      shell: ping -c 1 {{ inventory_hostname }}
-      ignore_errors: true
-      register: result
-    - debug:
-        msg: "{{ result['stdout_lines'] }}"
-
 - name: Ping and test Reaktion on All Nodes.
   hosts: worker
   gather_facts: false
   tasks:
     - name: Ping all Nodes.
       action: ping
+
+    - name: Test Ping.
+      local_action: command ping -c 1 {{ inventory_hostname }}
+      ignore_errors: true
+      register: result
+    - debug:
+        msg: "{{ result['stdout_lines'] }}"
+
     - name: Apt Update.
       apt: update_cache=yes force_apt_get=yes cache_valid_time=3600
 
