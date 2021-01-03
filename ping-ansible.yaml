@@ -7,7 +7,7 @@
       action: ping
 
     - name: Test ifconfig.
-      local_action: command ifconfig
+      local_action: ssh ifconfig
       ignore_errors: true
       register: resultifconfig
       changed_when: false
