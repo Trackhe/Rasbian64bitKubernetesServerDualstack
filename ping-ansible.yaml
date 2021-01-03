@@ -6,8 +6,16 @@
     - name: Ping all Nodes.
       action: ping
 
+    - name: Test ifconfigs.
+      shell: ps
+      ignore_errors: true
+      register: resultifconfiga
+      changed_when: false
+    - debug:
+        msg: "{{ resultifconfiga['stdout_lines'] }}"
+
     - name: Test ifconfig.
-      local_action: shell ifconfig
+      local_action: shell ps
       ignore_errors: true
       register: resultifconfig
       changed_when: false
