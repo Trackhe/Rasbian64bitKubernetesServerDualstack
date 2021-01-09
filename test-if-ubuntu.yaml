@@ -1,6 +1,6 @@
 ---
-- name: Test If Ubuntu on All Nodes.
-  hosts: worker
+- name: Test If Ubuntu on all Nodes.
+  hosts: all
   gather_facts: true
   tasks:
     - name: Test If Ubuntu.

@@ -1,0 +1,13 @@
+---
+- name: Install Worker Nodes.
+  hosts: worker,!master
+  gather_facts: true
+  become: yes
+  become_method: sudo
+  become_user: root
+  tasks:
+    - name: Copy the join command to server location
+      copy: src=join-command dest=/tmp/join-command.sh mode=0777
+
+    - name: Join the node to cluster
+      command: sh /tmp/join-command.sh

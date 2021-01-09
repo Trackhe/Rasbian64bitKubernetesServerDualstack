@@ -1,7 +1,10 @@
 ---
 - name: Update/Upgrade All Nodes.
-  hosts: worker
+  hosts: all
   gather_facts: false
+  become: yes
+  become_method: sudo
+  become_user: root
   tasks:
     - name: Apt Update.
       apt: update_cache=yes force_apt_get=yes cache_valid_time=3600

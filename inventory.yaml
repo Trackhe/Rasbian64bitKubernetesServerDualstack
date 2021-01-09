@@ -1,0 +1,53 @@
+---
+all:
+  hosts:
+    raspnode00:
+      ansible_host: 192.168.178.1
+      ansible_user: ubuntu
+      ansible_ssh_pass: ubuntu
+    raspnode01:
+      ansible_host: 192.168.178.2
+      ansible_user: ubuntu
+      ansible_ssh_pass: ubuntu
+    raspnode02:
+      ansible_host: 192.168.178.3
+      ansible_user: ubuntu
+      ansible_ssh_pass: ubuntu
+    raspnode03:
+      ansible_host: 192.168.178.4
+      ansible_user: ubuntu
+      ansible_ssh_pass: ubuntu
+    raspnode04:
+      ansible_host: 192.168.178.5
+      ansible_user: ubuntu
+      ansible_ssh_pass: ubuntu
+
+worker:
+  hosts:
+    raspnode00:
+      ansible_host: 192.168.178.6
+      ansible_user: ubuntu
+      ansible_ssh_pass: ubuntu
+    raspnode01:
+      ansible_host: 192.168.178.7
+      ansible_user: ubuntu
+      ansible_ssh_pass: ubuntu
+    raspnode02:
+      ansible_host: 192.168.178.8
+      ansible_user: ubuntu
+      ansible_ssh_pass: ubuntu
+    raspnode03:
+      ansible_host: 192.168.178.9
+      ansible_user: ubuntu
+      ansible_ssh_pass: ubuntu
+    raspnode04:
+      ansible_host: 192.168.178.10
+      ansible_user: ubuntu
+      ansible_ssh_pass: ubuntu
+
+master:
+  hosts:
+    raspnode00:
+      ansible_host: 192.168.178.1
+      ansible_user: ubuntu
+      ansible_ssh_pass: ubuntu
