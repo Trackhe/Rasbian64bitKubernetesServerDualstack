@@ -1,0 +1,12 @@
+---
+- name: Edit Modt.
+  hosts: all
+  gather_facts: true
+  become: yes
+  become_method: sudo
+  become_user: root
+  tasks:
+    - name: Set motd-news
+      shell: |
+            sed -i s/ENABLED=1/ENABLED=0/g /etc/default/motd-news
+            exit 0

@@ -234,13 +234,24 @@ kubectl apply -f components.yaml
 Download dashboard user, ClusterRoleBinding, deploy and get the login token.
 
 
-!!!   Not working for 1.19 please use https://www.replex.io/blog/how-to-install-access-and-add-heapster-metrics-to-the-kubernetes-dashboard
+!!! Not working for 1.19
 ```
 wget https://raw.githubusercontent.com/Trackhe/Raspberry64bitKubernetesServerDualstack/master/deployment/admin-user.yaml && \
 kubectl apply -f admin-user.yaml && \
 wget https://raw.githubusercontent.com/Trackhe/Raspberry64bitKubernetesServerDualstack/master/deployment/admin-cluster-role-binding.yaml && \
 kubectl apply -f admin-cluster-role-binding.yaml && \
 kubectl -n kubernetes-dashboard describe secret $(kubectl -n kubernetes-dashboard get secret | grep dashboard-admin-sa | awk '{print $1}')
+```
+
+!!! For > 1.20
+```
+kubectl create serviceaccount dashboard-admin-sa && \
+kubectl create clusterrolebinding dashboard-admin-sa --clusterrole=cluster-admin --serviceaccount=default:dashboard-admin-sa && \
+kubectl get secrets
+```
+Search ashboard-admin-sa-token-***** and get the token with:
+```
+kubectl describe secret dashboard-admin-sa-token-*****
 ```
 
 Now you can connect to the server with a terminal via `ssh -L 8001:localhost:8001 pi@piipaddresse` -> `su` -> `raspberry` or the password -> run `kubectl proxy --address='0.0.0.0' --accept-hosts='^*$'`
@@ -278,38 +289,48 @@ data:
     - name: default
       protocol: layer2
       addresses:
-      - 192.168.178.243-192.168.178.254
+      - 192.168.178.200-192.168.178.254
       - fd11:1111:1111:1111::/108
 ```
 and change the configmap coredns.   If you dont see the coredns config map. Select all Namespaces and under Configuration and Storage you find Config maps
 ```
-data:
-  Corefile: |
-  .:53 {
-      log
-      errors
-      health {
-         lameduck 5s
-      }
-      ready
-      template ANY ANY fritz.box {
-        rcode NXDOMAIN
-      }
-      kubernetes cluster.local in-addr.arpa ip6.arpa {
-         pods insecure
-         fallthrough in-addr.arpa ip6.arpa
-         ttl 30
-      }
-      prometheus :9153
-      forward . /etc/resolv.conf {
-         max_concurrent 1000
-      }
-      cache 30
-      loop
-      reload
-      loadbalance
-  }
+.:53 {
+    errors
+    health {
+       lameduck 5s
+    }
+    ready
+    template ANY ANY fritz.box {
+      rcode NXDOMAIN
+    }
+    kubernetes cluster.local in-addr.arpa ip6.arpa {
+       pods insecure
+       fallthrough in-addr.arpa ip6.arpa
+       ttl 30
+    }
+    prometheus :9153
+    forward . /etc/resolv.conf {
+       max_concurrent 1000
+    }
+    cache 30
+    loop
+    reload
+    loadbalance
+}
 ```
+
+Install Network Node Manager to use
+kubectl apply -f https://raw.githubusercontent.com/kakao/network-node-manager/master/deploy/network-node-manager_ipvs.yml
+
+Install calicoctl
+kubectl apply -f https://docs.projectcalico.org/manifests/calicoctl-etcd.yaml && \
+kubectl apply -f https://docs.projectcalico.org/manifests/calicoctl.yaml && \
+kubectl exec -ti -n kube-system calicoctl -- /calicoctl get profiles -o wide
+alias calicoctl="kubectl exec -i -n kube-system calicoctl -- /calicoctl"
+
+curl -o calicoctl -L  https://github.com/projectcalico/calicoctl/releases/download/v3.16.6/calicoctl-linux-arm64
+
+
 
 //Optional
 Ceph install
@@ -344,3 +365,24 @@ I hope you enjoy. Best Regards.
 If you need calicoctl write an issue.
 
 Feel free to make improvements. and share it with us.
+
+
+kind: Service
+apiVersion: v1
+metadata:
+  name: testnginxv6
+  annotations:
+    metallb.universe.tf/allow-shared-ip: piholev6
+  labels:
+    k8s-app: testnginx
+spec:
+  ports:
+    - name: tcp-80-80-9gqre
+      protocol: TCP
+      port: 80
+      targetPort: 80
+  selector:
+    k8s-app: testnginx
+  type: LoadBalancer
+  loadBalancerIP: fd11:1111:1111:1111::1
+  ipFamily: IPv6

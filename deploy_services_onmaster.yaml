@@ -1,0 +1,56 @@
+---
+- name: Install Master Nodes.
+  hosts: master
+  gather_facts: true
+  become: yes
+  become_method: sudo
+  become_user: root
+  tasks:
+    - name: Deploy Networkplugin (Calico)
+      shell: kubectl apply -f https://docs.projectcalico.org/v3.14/manifests/calico.yaml
+
+    - name: Read-write git checkout from github
+      git:
+        repo: 'https://github.com/Trackhe/Raspberry64bitKubernetesServerDualstack.git'
+        dest: /tmp/rsp
+
+    - name: wait for pods to come up
+      shell: kubectl get pods --all-namespaces -o json
+      register: kubectl_get_pods
+      until: kubectl_get_pods.stdout|from_json|json_query('items[*].status.phase')|unique == ["Running"]
+
+    - name: Deploy Calicov6
+      shell: kubectl apply -f /tmp/rsp/deployment/calicov6.yaml
+
+    - name: tain Master
+      shell: kubectl taint nodes --all node-role.kubernetes.io/master-
+      ignore_errors: yes
+
+    - name: Reboot the server.
+      reboot:
+        msg: "Reboot initiated by Ansible due make Hostname aktive."
+        connect_timeout: 5
+        reboot_timeout: 3600
+        pre_reboot_delay: 0
+        post_reboot_delay: 30
+        test_command: uptime
+
+    - name: Rebot Fix.
+      shell: kubeadm init --skip-phases=preflight --config kubeadm.yaml
+
+    - name: Deploy Dashboard
+      shell: kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.1.0/aio/deploy/recommended.yaml
+
+    - name: Deploy Metrics
+      shell: kubectl apply -f /tmp/rsp/deployment/components.yaml
+
+    - name: Metallb Install.
+      shell: |
+            kubectl get configmap kube-proxy -n kube-system -o yaml | \
+            sed -e "s/strictARP: false/strictARP: true/" | \
+            sed -e "s/mode: ""/mode: "ipvs"/" | \
+            kubectl apply -f - -n kube-system && \
+            kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.9.5/manifests/namespace.yaml && \
+            kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.9.5/manifests/metallb.yaml && \
+            kubectl create secret generic -n metallb-system memberlist --from-literal=secretkey="$(openssl rand -base64 128)"
+            exit 0
