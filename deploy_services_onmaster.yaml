@@ -14,17 +14,22 @@
         repo: 'https://github.com/Trackhe/Raspberry64bitKubernetesServerDualstack.git'
         dest: /tmp/rsp
 
-    - name: wait for pods to come up
-      shell: kubectl get pods --all-namespaces -o json
-      register: kubectl_get_pods
-      until: kubectl_get_pods.stdout|from_json|json_query('items[*].status.phase')|unique == ["Running"]
-
     - name: Deploy Calicov6
       shell: kubectl apply -f /tmp/rsp/deployment/calicov6.yaml
 
     - name: tain Master
       shell: kubectl taint nodes --all node-role.kubernetes.io/master-
       ignore_errors: yes
+
+
+
+
+
+
+    - name: wait for pods to come up
+      shell: kubectl get pods --all-namespaces -o json
+      register: kubectl_get_pods
+      until: kubectl_get_pods.stdout|from_json|json_query('items[*].status.phase')|unique == ["Running"]
 
     - name: Reboot the server.
       reboot:
@@ -37,6 +42,11 @@
 
     - name: Rebot Fix.
       shell: kubeadm init --skip-phases=preflight --config kubeadm.yaml
+
+
+
+
+
 
     - name: Deploy Dashboard
       shell: kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.1.0/aio/deploy/recommended.yaml

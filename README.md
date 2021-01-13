@@ -227,8 +227,7 @@ kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.1.0/a
 ```
 and Metrics Server
 ```
-wget https://raw.githubusercontent.com/Trackhe/Raspberry64bitKubernetesServerDualstack/master/deployment/components.yaml && \
-kubectl apply -f components.yaml
+kubectl apply -f https://raw.githubusercontent.com/Trackhe/Raspberry64bitKubernetesServerDualstack/master/deployment/components.yaml
 ```
 
 Download dashboard user, ClusterRoleBinding, deploy and get the login token.
@@ -320,16 +319,21 @@ and change the configmap coredns.   If you dont see the coredns config map. Sele
 ```
 
 Install Network Node Manager to use
+```
 kubectl apply -f https://raw.githubusercontent.com/kakao/network-node-manager/master/deploy/network-node-manager_ipvs.yml
+```
+
+Install Ip Masq Agent
+```
+kubectl apply -f https://raw.githubusercontent.com/Trackhe/Raspberry64bitKubernetesServerDualstack/master/deployment/ip-masq-agent.yaml
+```
 
 Install calicoctl
-kubectl apply -f https://docs.projectcalico.org/manifests/calicoctl-etcd.yaml && \
-kubectl apply -f https://docs.projectcalico.org/manifests/calicoctl.yaml && \
-kubectl exec -ti -n kube-system calicoctl -- /calicoctl get profiles -o wide
-alias calicoctl="kubectl exec -i -n kube-system calicoctl -- /calicoctl"
-
-curl -o calicoctl -L  https://github.com/projectcalico/calicoctl/releases/download/v3.16.6/calicoctl-linux-arm64
-
+```
+curl -o calicoctl -L  https://github.com/projectcalico/calicoctl/releases/download/v3.16.6/calicoctl-linux-arm64 && \
+chmod +x calicoctl && \
+sudo mv calicoctl /usr/local/bin/
+```
 
 
 //Optional
@@ -370,14 +374,16 @@ Feel free to make improvements. and share it with us.
 kind: Service
 apiVersion: v1
 metadata:
-  name: testnginxv6
+  name: test
+  namespace: default
   annotations:
-    metallb.universe.tf/allow-shared-ip: piholev6
+    metallb.universe.tf/allow-shared-ip: test
   labels:
     k8s-app: testnginx
 spec:
+  ipFamilyPolicy: PreferDualStack
   ports:
-    - name: tcp-80-80-9gqre
+    - name: test1
       protocol: TCP
       port: 80
       targetPort: 80

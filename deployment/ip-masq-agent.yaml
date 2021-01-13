@@ -15,7 +15,7 @@ spec:
       hostNetwork: true
       containers:
       - name: ip-masq-agent
-        image: k8s.gcr.io/ip-masq-agent-arm64:latest
+        image: k8s.gcr.io/ip-masq-agent-arm64:v2.5.0
         securityContext:
           privileged: false
           capabilities:
