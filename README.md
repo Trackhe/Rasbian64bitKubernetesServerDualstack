@@ -60,6 +60,18 @@ sudo sh -c 'echo $(cat /boot/firmware/cmdline.txt) "cgroup_enable=cpuset cgroup_
 
 Prepare OS.
 ```
+cat <<EOF | sudo tee /etc/modules-load.d/containerd.conf
+overlay
+br_netfilter
+EOF
+```
+
+```
+sudo modprobe overlay && \
+sudo modprobe br_netfilter
+```
+
+```
 cat <<EOF | sudo tee /etc/sysctl.d/k8s.conf
 net.bridge.bridge-nf-call-ip6tables = 1
 net.bridge.bridge-nf-call-iptables = 1
@@ -89,39 +101,22 @@ sudo reboot
 
 --- Install Kubernetes Dualstack ---
 
-Install Docker:
+Install containerd:
 
 ```
-sudo apt-get install -y apt-transport-https gnupg-agent && \
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+sudo apt-get update && sudo apt-get install -y containerd
 ```
 
+Configure containerd
 ```
-sudo apt update && \
-curl -fSLs https://get.docker.com | sudo sh
+sudo mkdir -p /etc/containerd && \
+sudo containerd config default | sudo tee /etc/containerd/config.toml
 ```
 
-Give Docker User root:
+Restart containerd:
 ```
-sudo usermod -aG docker ubuntu
-```
-Set up the Docker daemon for autostart:
-```
-sudo sh -c 'cat > /etc/docker/daemon.json <<EOF
-{
-  "exec-opts": ["native.cgroupdriver=systemd"],
-  "log-driver": "json-file",
-  "log-opts": {
-    "max-size": "100m"
-  },
-  "storage-driver": "overlay2"
-}
-EOF'
-```
-```
-sudo mkdir -p /etc/systemd/system/docker.service.d && \
-sudo systemctl enable docker && \
-sudo systemctl restart docker
+sudo systemctl enable containerd && \
+sudo systemctl restart containerd
 ```
 
 Disable SWAP:
@@ -150,12 +145,16 @@ sudo apt-get update && sudo apt-get install -y kubelet kubeadm kubectl
 serviceSubnet can be only /108 or greater becuase https://github.com/kubernetes/kubernetes/pull/90115
 Soo you can use:
 ```
-cat >> kubeadm.yaml << EOF                                                          
+cat >> kubeadm.yaml << EOF
+apiVersion: kubelet.config.k8s.io/v1beta1
+kind: KubeletConfiguration
+cgroupDriver: systemd
+---                                                          
 apiVersion: kubeadm.k8s.io/v1beta2
 kind: InitConfiguration
 nodeRegistration:
   kubeletExtraArgs:
-    node-ip: "192.168.178.240,fd11:1111:1111:1111:dea6:32ff:fe34:ed61"
+    node-ip: "192.168.178.103,fd11:1111:1111:1111:dea6:32ff:fecc:d391"
 ---
 apiVersion: kubeadm.k8s.io/v1beta2
 kind: ClusterConfiguration
@@ -328,6 +327,9 @@ Install Ip Masq Agent
 kubectl apply -f https://raw.githubusercontent.com/Trackhe/Raspberry64bitKubernetesServerDualstack/master/deployment/ip-masq-agent.yaml
 ```
 
+//Optional | Next Stuff is Optional
+
+
 Install calicoctl
 ```
 curl -o calicoctl -L  https://github.com/projectcalico/calicoctl/releases/download/v3.16.6/calicoctl-linux-arm64 && \
@@ -336,7 +338,13 @@ sudo mv calicoctl /usr/local/bin/
 ```
 
 
-//Optional
+Install kubectl autocompletion
+```
+echo 'source <(kubectl completion bash)' >>~/.bashrc && \
+bash --login
+```
+
+
 Ceph install
 ```
 
