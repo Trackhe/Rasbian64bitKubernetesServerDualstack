@@ -181,7 +181,7 @@ sudo chown $(id -u):$(id -g) $HOME/.kube/config
 
 So you need to deploy a Network Pod.
 ```
-wget https://docs.projectcalico.org/v3.14/manifests/calico.yaml && \
+wget https://docs.projectcalico.org/v3.17/manifests/calico.yaml && \
 kubectl apply -f calico.yaml
 ```
 
@@ -374,29 +374,26 @@ A Part to make the Dashboard on the LAN Reachable follows soon.
 
 I hope you enjoy. Best Regards.
 
-If you need calicoctl write an issue.
-
 Feel free to make improvements. and share it with us.
 
 
 kind: Service
 apiVersion: v1
 metadata:
-  name: test
+  name: testd
   namespace: default
-  annotations:
-    metallb.universe.tf/allow-shared-ip: test
   labels:
     k8s-app: testnginx
 spec:
-  ipFamilyPolicy: PreferDualStack
+  ipFamilyPolicy: SingleStack
   ports:
-    - name: test1
+    - name: test1s
       protocol: TCP
       port: 80
       targetPort: 80
   selector:
     k8s-app: testnginx
   type: LoadBalancer
-  loadBalancerIP: fd11:1111:1111:1111::1
-  ipFamily: IPv6
+  loadBalancerIP: fd11:1111:1111:1111::2
+  ipFamilies:
+  - IPv6
